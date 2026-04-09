@@ -1,0 +1,103 @@
+.manage-basket-label {
+    font-weight: 600;
+    font-size: 19px;
+    border-left: 3px solid #00c6b1;
+}
+
+.manage-basket-parent {
+    margin: 1%;
+    padding: 1%;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    height: 95%;
+    overflow: auto;
+}
+
+.manage-basket-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.manage-basket-label>span{
+ margin-left: 10px;
+}
+
+.manage-basket-back{
+    background-color: #1c7ea0;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: small;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.manage-basket-create-new{
+    background-color: #00c6b1 !important;
+    padding: 9.5px !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-size: small !important;
+    font-weight: bold !important;
+    margin-left: 10px !important;
+    flex-shrink: 0;
+}
+
+.manage-basket-buttons{
+    display: flex;
+    justify-content: space-around;
+    flex-shrink: 1;
+    gap: 10px;
+    align-items: center;
+}
+
+.manage-basket-table{
+    margin-top: 1%;
+    height: 94%;
+    overflow: auto;
+}
+.manage-basket-table .MuiDataGrid-columnHeaders {
+    background-color: #f3fcfb;
+    color: #23c6b0;
+}
+.manage-basket-table-button{
+    padding: 8px;
+    color : white;
+    background-color: #1c7ea0;
+    border-radius: 3px;
+    border: none;
+    font-size: smaller;
+    
+}
+
+.manage-basket-toogle-button{
+    display: flex;
+    align-items: center;
+    width: 63px;
+    flex-flow: column-reverse;
+    cursor: pointer;
+}
+
+.checked-icon-status {
+    padding-left: 0.3rem;
+    color: white;
+    font-size: 62%;
+    width: 100%;
+    padding-top: 14%;
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+.unchecked-icon-status {
+    color: white;
+    width: 100%;
+    margin-left: -19%;
+    margin-top: 17%;
+    font-size: 55%;
+    margin-right: 70px;
+    font-weight: bold;
+}

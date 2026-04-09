@@ -1,0 +1,114 @@
+
+/* CreateBanner styles */
+.createBannerInputsMargin{
+    margin-bottom: 1rem !important;
+    width: 100% !important;
+}
+.togglePositionSelect{
+   width: 100% !important;
+}
+.createBannerPaperContainer{
+    /* height: 100%;  */
+    background-color:white !important;
+    padding: 10px;
+}
+.bannerDescriptionBoxContainer{
+    padding: 20px; 
+    border-radius: 10px;
+    border: 1px solid #c3c4c3;
+    background-color: white;
+    width: 100%;
+}
+.bannerNameTextField{
+    margin-top: 20px !important;
+    width: 100% !important;
+}
+.createBannerButtonsContainer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 80px;
+    gap: 15px;
+}
+.bannerCircularProgressContainer{
+    display: flex;
+    justify-content: space-around;
+    width: 10rem;
+    align-items: center;
+    color: white;
+}
+/* BannerTemplateConfigOptions styles */
+.bannerElementAndDescriptionHeading{
+    font-size: 19px !important;
+    font-weight: 600 !important;
+}
+.bannerDescriptionAndElementHeadingContainer{
+    border-left: 3px solid var(--dashboard-theme-color);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.bannerElementBoxContainer{
+    margin-top: 18px;
+    padding: 20px;
+    width: 100%;
+    background-color: white;
+    border-radius: 10px;
+    border: 1px solid #c3c4c3;
+}
+.bannerButtonStyles{
+    padding: 0.5rem 1.6rem !important;
+    /* font-size: 0.64rem !important; */
+    font-size: smaller !important;
+    background-color: var(--dashboard-secondary-color) !important ;
+    width: 7rem;
+}
+.bannerTypeAutoSelect{
+    margin-top: 20px;
+}
+
+.bannerInputsContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bannerElementResetButtonContainer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 40px;
+}
+.bannerLanguageTabsContainer{
+    margin-top: 20px;
+    border: 1px solid #c3c4c3;
+    padding: 20px 14px 14px;
+    border-radius: 10px;
+}
+.bannerLanguageTabsContainer .bannerLanguageTab[aria-selected = "true"]{
+    background-color: var(--dashboard-secondary-color);
+    color: white;
+    transition: 0.3s;
+    border-radius: 5px;
+}
+.bannerLanguageTabsContainer .bannerLanguageTab{
+    width: 100px;
+    min-height: 30px;
+}
+.bannerLanguageTabsContainer .MuiTabs-flexContainer{
+    gap: 20px;
+    margin-left: 5px;
+}
+.createBannerActionButton{
+    font-weight: 600 !important;
+    width: 7.5rem;
+    height: 3rem;
+}
+.filter-wrapper{
+    padding-block: 18px;
+    --coupon-light-blue: #F0FBFF;
+    --coupon-dark-blue: #227C9D;
+}

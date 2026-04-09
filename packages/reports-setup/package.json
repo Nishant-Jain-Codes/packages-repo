@@ -1,0 +1,43 @@
+{
+  "name": "@aditya-sharma-salescode/reports-setup",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "@aditya-sharma-salescode/form-builder": "workspace:*"
+  },
+  "dependencies": {
+    "@aditya-sharma-salescode/shared-ui": "workspace:*",
+    "@aditya-sharma-salescode/reports-ui": "^1.0.20",
+    "lucide-react": "^0.462.0",
+    "sonner": "^1.7.4",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.3",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7"
+  }
+}

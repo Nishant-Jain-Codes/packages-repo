@@ -1,0 +1,184 @@
+.create-basket-parent{
+    margin: 1%;
+    padding: 1%;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
+.create-basket-label{
+    font-weight: 600;
+    font-size: 19px;
+    border-left: 3px solid #00c6b1;
+    display: flex;
+    justify-content: space-between;
+}
+
+.create-basket-label-back-button{
+    background-color: #909090;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: small;
+    font-weight: bold;
+    height: 100%;
+    min-width: 85px;
+}
+
+.create-basket-label>span{
+    margin-left: 10px;
+}
+
+.create-basket-input-fields{
+    margin: 1%;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+}
+
+.create-basket-buttons{
+    color:white;
+    padding: 10px;
+    border-radius: 3px;
+    border: none;
+    width: max-content;
+    background-color: #b7b7b7;
+    width: 13%;
+    min-width: max-content;
+    display: flex;
+    justify-content: space-around;
+}
+
+.create-basket-input-labels{
+    margin-top: 15px;
+    margin-bottom: 5px;
+    align-items: center;
+    display: flex;
+}
+
+.create-basket-submit{
+    display: flex;
+    width: 107px;
+    padding: 11px;
+    justify-content: center;
+    margin-top: 15px;
+    align-self: center;
+    border: none;
+    border-radius: 25px;
+    color: gray;
+    font-weight: bold;
+}
+
+.create-basket-submit-active{
+    background-color: var(--dashboard-secondary-color);
+    color: white;
+}
+
+.create-basket-upload-active{
+    background-color: #00c6b1;
+}
+
+.theme-image{
+    display: flex;
+    gap: 1rem;
+}
+
+.create-basket-image-input{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin:10px;
+    border: 1px dashed #00C6B1;
+    color: #00C6B1;
+    background-color: #E5F8FA;
+    border-radius: 10px;
+}
+
+.create-basket-image-upload{
+    cursor: pointer;
+    width: 100%;
+    padding: 25px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.create-basket-cross-button{
+    align-self: flex-start;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.create-checked-icon-status {
+    padding-left: 0.3rem;
+    color: white;
+    font-size: 54%;
+    width: 100%;
+    padding-top: 14%;
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+.create-unchecked-icon-status {
+    color: white;
+    width: 100%;
+    margin-left: -19%;
+    margin-top: 12%;
+    font-size: 55%;
+    margin-right: 70px;
+    font-weight: bold;
+}
+
+.create-unchecked-color-status {
+    padding-left: 0.4rem;
+    color: black;
+    font-size: 59%;
+    width: 100%;
+    padding-top: 14%;
+    font-weight: bold;
+    margin-right: 2px;
+    
+}
+.create-checked-color-status {
+    color: white;
+    width: 100%;
+    margin-left: -19%;
+    margin-top: 12%;
+    font-size: 55%;
+    margin-right: 70px;
+    font-weight: bold;
+}
+
+.create-basket-switch{
+    margin-left: 10px;
+}
+
+.create-basket-color-switch{
+    margin-left: 10px;
+    border: 0.2px solid black;
+}
+.create-unchecked-cart-status {
+    padding-left: 0.2rem;
+    color: white;
+    font-size: 48%;
+    width: 100%;
+    padding-top: 17%;
+    font-weight: bold;
+    margin-right: 2px;
+    
+}
+.create-checked-cart-status {
+    color: white;
+    width: 100%;
+    margin-left: -23%;
+    margin-top: 16%;
+    font-size: 48%;
+    margin-right: 70px;
+    font-weight: bold;
+}
+.product-image {
+    width: 90px;
+    height: 90px;
+  }

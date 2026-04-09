@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500&display=swap');
+.manage-home-screen-label {
+    font-weight: 600;
+    font-size: 19px;
+    border-left: 3px solid #00c6b1;
+}
+
+.manage-home-screen-parent {
+    /* margin: 1%;
+    padding: 1%; */
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    height: 100%;
+    /* overflow: hidden; */
+    font-family: 'Poppins';
+    letter-spacing: 0px;
+}
+
+.manage-home-screen-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.manage-home-screen-label>span{
+    margin-left: 10px;
+}
+
+.manage-home-screen-back{
+    background-color: #1c7ea0;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: small;
+    font-weight: bold;
+}
+
+.manage-home-screen-create-new{
+    background-color: #00c6b1;
+    padding: 12px;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: small;
+    font-weight: bold;
+    margin-left: 10px;
+    text-transform: uppercase;
+}
+
+.manage-home-screen-buttons{
+    display: flex;
+    gap: 10px;
+}
+
+.manage-home-screen-table{
+    flex: 1 1;
+    height: 100%;
+    background-color: white;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+.manage-home-screen-table-button{
+    padding: 8px;
+    color : white;
+    background-color: #1c7ea0;
+    border-radius: 3px;
+    border: none;
+    font-size: smaller;
+    
+}
+.manage-home-screen-table-preview-container{
+    display: flex;
+    width: 100%;
+    /* margin-top: 30px; */
+    height: 100%;
+    background-color: var(--dashboard-background-color);
+    /* justify-content: flex-start; */
+}
+
+.manage-block-drag-drop-table {
+    width: 100%;
+    border-collapse: collapse;
+    /* margin-top: 5px; */
+    /* border: 1px solid #e0e0e0; */
+    background-color: white;
+    font-size: 14px;
+    font-weight: 300;
+}
+.manage-block-drag-drop-table tr{
+    background-color: white;
+    display: revert;
+    width: 100%;
+}
+.manage-block-drag-drop-table th,
+.manage-block-drag-drop-table td {
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0 !important;
+    text-align: left;
+    height: 55px;
+}
+
+.manage-block-drag-drop-table th {
+    font-weight: bold;
+    background-color: #F3FCFB;
+    color: var(--dashboard-theme-color)
+}
+.manage-block-drag-drop-table2 th {
+    background-color: #e9f6fb;
+    color: #1c7ea0;
+    font-weight: 500;
+}
+
+.manage-block-drag-drop-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+.manage-home-screen-preview{
+    margin-left: 20px;
+    width: 350px;
+    height: 100%;
+}
+.manage-home-screen-table-button{
+    padding: 8px;
+    color : white;
+    background-color: var(--dashboard-theme-color);
+    border-radius: 3px;
+    border: none;
+    font-size: smaller;
+    width: 80px;
+}
+.manage-home-screen-delete-button{
+    background-color: white;
+    color: var(--dashboard-secondary-color);
+    border: 1px solid var(--dashboard-secondary-color);;
+}
+.manage-block-drag-drop-table-header{
+    height: 60px;
+}
+
+.manage-home-screen-toggle-checked-icon-status{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 400;
+    color: white;
+    height: 100%;
+    width: 100%;
+    margin-left: 7px;
+    overflow: hidden;
+}
+.manage-home-screen-toggle-unchecked-icon-status{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 400;
+    color: white;
+    height: 100%;
+    margin-right: 17px;
+}
+.manage-block-drag-icon-cell{
+    width: 50px;
+    text-align: center !important;
+    color: var(--dashboard-secondary-color);
+}
+.manage-home-screen-save-button-progress{
+    display: flex;
+    justify-content: space-around;
+    width: 10rem;
+    align-items: center;
+    color: white;
+}
+.manage-home-screen-preview-frame{
+    width: 100%;
+    height: 100%;
+}
+.manage-home-screen-table-button-disabled-button{
+    background-color: gray;
+}
+.manage-block-drag-drop-table-no-rows-message{
+    text-align: center !important ;
+}
+.previewPage{
+    min-width: calc(41% - 3vmax);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
