@@ -27,17 +27,15 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Install
         run: pnpm install --frozen-lockfile=false
 
       - name: Build
-        run: pnpm -r --filter "!@aditya-sharma-salescode/content-management" build
+        run: pnpm -r --filter "!@salescode/content-management" build
 
       - name: Publish workspaces
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm -r --filter "!@aditya-sharma-salescode/content-management" publish --access=restricted --no-git-checks
+        run: pnpm -r --filter "!@salescode/content-management" publish --access=restricted --no-git-checks
 
