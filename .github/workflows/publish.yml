@@ -42,8 +42,11 @@ jobs:
       - name: Build
         run: pnpm -r --filter "!@salescode/content-management" build
 
+      # npm/pnpm publish reads registry auth from .npmrc, not only NODE_AUTH_TOKEN in env.
       - name: Publish workspaces
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm -r --filter "!@salescode/content-management" publish --access=restricted --no-git-checks
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
+          pnpm -r --filter "!@salescode/content-management" publish --access=restricted --no-git-checks
 
