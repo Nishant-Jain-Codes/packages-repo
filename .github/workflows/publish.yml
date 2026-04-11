@@ -20,9 +20,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          # Do not set registry-url here — it can force the default registry to GitHub Packages
-          # and break installs of public packages (e.g. uuid). Scoped GitHub Packages auth is
-          # handled via repo .npmrc (@aditya-sharma-salescode:registry=...) + NODE_AUTH_TOKEN.
+          # Do not set registry-url here — it can set the default registry to GitHub Packages
+          # and break installs of public packages (e.g. uuid). Scoped registries live in repo .npmrc.
 
       - name: Enable Corepack
         run: corepack enable
@@ -30,23 +29,26 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      # pnpm does not always attach NODE_AUTH_TOKEN to GitHub Packages fetches unless .npmrc
-      # contains //npm.pkg.github.com/:_authToken (setup-node used to add this via registry-url).
-      - name: Install
+      # One PAT for install + publish: read:packages + write:packages (classic PAT on package owner).
+      # Write to project + HOME so npm/pnpm find auth from any package cwd (pnpm -r publish cds into each pkg).
+      - name: Authenticate GitHub Packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
         run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::Set repository secret GH_PACKAGES_TOKEN (PAT with read:packages + write:packages)."
+            exit 1
+          fi
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
-          pnpm install --frozen-lockfile=false
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
 
       - name: Build
         run: pnpm -r --filter "!@salescode/content-management" build
 
-      # npm/pnpm publish reads registry auth from .npmrc, not only NODE_AUTH_TOKEN in env.
       - name: Publish workspaces
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
-          pnpm -r --filter "!@salescode/content-management" publish --access=restricted --no-git-checks
-
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+        run: pnpm -r --filter "!@salescode/content-management" publish --access=restricted --no-git-checks
