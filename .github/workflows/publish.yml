@@ -30,10 +30,14 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
+      # pnpm does not always attach NODE_AUTH_TOKEN to GitHub Packages fetches unless .npmrc
+      # contains //npm.pkg.github.com/:_authToken (setup-node used to add this via registry-url).
       - name: Install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-        run: pnpm install --frozen-lockfile=false
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
+          pnpm install --frozen-lockfile=false
 
       - name: Build
         run: pnpm -r --filter "!@salescode/content-management" build
