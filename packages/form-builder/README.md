@@ -2,6 +2,35 @@
 
 Form builder (activities + drag-and-drop canvas), **voice agent**, and embedded **reports** (config, preview, portal). Published to **GitHub Packages**.
 
+## Plug-and-play (one component)
+
+**Demo / isolated app** (includes `BrowserRouter`):
+
+```tsx
+import { FormBuilderStandalone } from "@aditya-sharma-salescode/form-builder";
+
+export default function Page() {
+  return <FormBuilderStandalone />;
+}
+```
+
+Uses URLs like `/manage-forms`, `/form-builder/:id`, `/report-preview`, …
+
+**Inside your existing router**:
+
+```tsx
+import { Route, Routes } from "react-router-dom";
+import { FormBuilderPlugIn } from "@aditya-sharma-salescode/form-builder";
+
+<Routes>
+  <Route path="/suite/*" element={<FormBuilderPlugIn routePrefix="/suite" />} />
+</Routes>
+```
+
+Then link to `/suite/manage-forms`. See **`FormBuilderPlugIn`** props for `mode` (`nested` vs `root`).
+
+---
+
 ## Install
 
 `.npmrc`:

@@ -17,6 +17,10 @@ export { buildFormBuilderRoutes, resolveLegacyNavigatePath } from "./routes";
 // ─── Shell: voice session + panel across manage / builder / reports ───
 export { FormBuilderLayout } from "./voice/FormBuilderLayout";
 
+// ─── Plug-and-play (routes + provider in one) ───────────────────────────
+export { FormBuilderPlugIn, FormBuilderStandalone } from "./FormBuilderPlugIn";
+export type { FormBuilderPlugInProps, FormBuilderStandaloneProps } from "./FormBuilderPlugIn";
+
 // ─── Main screens ─────────────────────────────────────────
 export { FormBuilder } from "./FormBuilder";
 export { ManageForms } from "./components/ManageForms/ManageForms";

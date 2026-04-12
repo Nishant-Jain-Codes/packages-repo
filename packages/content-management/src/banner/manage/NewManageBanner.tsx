@@ -49,6 +49,7 @@ import BackButton from "@/utils/BackButton";
 import BannerStatusModal from "@/features/content-management/banner/manage/BannerStatusModal";
 import { getConfigKeyValue } from "@/features/content-management/services/manageHomeScreenService";
 import { useSelector } from "react-redux";
+import { useContentManagementConfig } from "@/provider";
 import { retailerAppLayoutConfigObj } from "@/features/content-management/block/create/CreateBlockTypes";
 import { set } from "date-fns";
 
@@ -56,6 +57,7 @@ function NewManageBanner(props: { hideBackButton?: boolean }) {
   const [useBeta, setUseBeta] = useState<boolean>(false);
   const [useSaleshub, setUseSaleshub] = useState<boolean>(false); 
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
   const [rows, setRows] = useState<bannerData[]>([]);
   const allBannerData = useRef<bannerData[]>([]);
   const allTableBanners = useRef<bannerData[]>([]);
@@ -95,7 +97,7 @@ function NewManageBanner(props: { hideBackButton?: boolean }) {
   const [openModal, toggleModal] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
   const [isModalLoading,setIsModalLoading] = useState<boolean>(true);  
-  const savedRole:any = useSelector(() => store.getState().roleState.role)
+  const savedRole:any = useSelector((state: any) => state.roleState.role)
   async function getAndSetBlocks(){
     const clientConfig = await getNewMetaDataConfig();
     clientConfigRef.current = clientConfig;
@@ -387,7 +389,7 @@ function NewManageBanner(props: { hideBackButton?: boolean }) {
               if(status && status==="INPROGRESS"){
                 openPopup("Error","Banner Creation is in progress")
               }else{
-              navigate("/create-banner",{
+              navigate(routes.createBanner,{
                 state: {
                   step: "create-banner",
                   currentBanner: params.row
@@ -935,7 +937,7 @@ function NewManageBanner(props: { hideBackButton?: boolean }) {
               className="manageBannerActionsButton manageBannerCreateButton"
               onClick={() => {
                 // resetBanner();
-                navigate("/create-banner", {
+                navigate(routes.createBanner, {
                   state: { step: "create-banner" }
                 });
               }}

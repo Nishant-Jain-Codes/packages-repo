@@ -19,15 +19,12 @@ export type bannerData = any;
 
 export const bannerMockData: any[] = [];
 
-// Legacy singleton referenced by existing pages.
-// In an isolated package this is just a stub; consumers should wire their own state.
+import { contentManagementStore } from "../reduxStore";
+
+/** Mirrors the Redux store used when wrapped with plug-in `Provider`. */
 export const store = {
-  getState: () => ({
-    roleState: { role: { id: "generic" } },
-    bannerState: { isUpdated: false },
-    genericFilter: {},
-  }),
-  dispatch: (_action?: any) => undefined,
+  getState: () => contentManagementStore.getState() as any,
+  dispatch: (action?: unknown) => contentManagementStore.dispatch(action as any),
 };
 
 export function openPopup(_type: PopupType, _message: string) {}

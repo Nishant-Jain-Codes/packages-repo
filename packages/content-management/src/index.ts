@@ -1,6 +1,34 @@
 // ─── Provider & Config ───────────────────────────────────
-export { ContentManagementProvider, useContentManagementConfig } from "./provider";
-export type { ContentManagementConfig, ContentManagementFeatures, ContentManagementServiceOverrides } from "./provider";
+export {
+  ContentManagementProvider,
+  useContentManagementConfig,
+} from "./provider";
+export type {
+  ContentManagementConfig,
+  ContentManagementContextValue,
+  ContentManagementFeatures,
+  ContentManagementServiceOverrides,
+  ContentManagementResolvedRoutes,
+} from "./provider";
+
+// ─── Routes ─────────────────────────────────────────────
+export {
+  buildContentManagementRoutes,
+  stripRoutePrefix,
+} from "./contentRoutes";
+
+// ─── Plug-and-play (all pages + Redux) ───────────────────
+export {
+  ContentManagementPlugIn,
+  ContentManagementStandalone,
+} from "./ContentManagementPlugIn";
+export type {
+  ContentManagementPlugInProps,
+  ContentManagementStandaloneProps,
+} from "./ContentManagementPlugIn";
+
+export { contentManagementStore } from "./reduxStore";
+export type { ContentManagementRootState } from "./reduxStore";
 
 // ─── Pages ───────────────────────────────────────────────
 export { BannerPage } from "./banner/BannerPage";

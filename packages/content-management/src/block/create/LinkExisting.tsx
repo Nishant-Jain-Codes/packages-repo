@@ -92,7 +92,7 @@ export default function LinkExisting({redirectToRef, blockState, handleParentDat
         { label: "Toggle Banner", id: "toggleBanner" }
     ];
     const [useBeta, setUseBeta] = useState<boolean>(false);
-    const savedRole:any = useSelector(() => store.getState().roleState.role)
+    const savedRole:any = useSelector((state: any) => state.roleState.role)
     // const [bannerBehaviourOptionValue, setBannerBehaviourOptionValue] = useState<any>();
     const handlebannerBehaviour = (event: any, value: any) => {
         setBannerBehaviourOptionValue(value)

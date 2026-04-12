@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useContentManagementConfig } from '@/provider';
 import { BannerPreview } from '@/components/bannerPreview/BannerPreview';
 import { Loader } from '@/components/loader/Loader';
 import { ConfirmationPopUp } from '@/components/confirmationPopUp';
@@ -19,6 +20,7 @@ function BlockBannerSelection(props:blockBannerSelectionProps) {
     
     const currentRoute = (useLocation().pathname);
     const navigate = useNavigate();
+    const { routes } = useContentManagementConfig();
     // const locationState: createBucketNavigate = location.state as createBucketNavigate;
     const [bannerOptions,setBannerOptions] = useState<string[]>([]);
     const [selectedBanners,setSelectedBanners] = useState<string[]>([]);
@@ -171,14 +173,14 @@ function BlockBannerSelection(props:blockBannerSelectionProps) {
             const bannerData = {...targetBanner.current, bannerTemplateType: bannerTemplates.find((bannerTemplate) => targetBanner.current?.bannerType === bannerTemplate.id)?.label};
             // setCurrentBanner(bannerData as bannerData);
             if(currentRoute.includes("/dashboard/")){
-                navigate("/create-banner",{
+                navigate(routes.createBanner,{
                     state: {
                         isBucketEdit: true,
                         currentBanner: bannerData
                     }
                 });
             }else{
-                navigate("/create-banner",{
+                navigate(routes.createBanner,{
                     state: {
                         isBucketEdit: true,
                         currentBanner: bannerData

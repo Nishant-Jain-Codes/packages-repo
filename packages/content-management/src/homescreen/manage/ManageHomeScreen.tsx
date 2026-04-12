@@ -26,7 +26,7 @@ import { defaultTokenNew, META_DATA_BATCH_API, tokenNew } from '@/utils/networkS
 import { getMetaDataConfig, validateMetaDataResponse } from '@/utils/UtilityService';
 import { getLob } from '@/utils/UtilityService';
 import { useSelector } from 'react-redux';
-import { store } from '@/utils/UtilityService';
+import { useContentManagementConfig } from '@/provider';
 import axios from 'axios';
 
 function ManageHomeScreen(props: ManageHomeScreenProps) {
@@ -53,7 +53,8 @@ function ManageHomeScreen(props: ManageHomeScreenProps) {
   const clientConfigRef = useRef<any[]>([]);
   const allBanners = useRef<any[] | null>(null);
   const navigate = useNavigate();
-  const savedRole:any = useSelector(() => store.getState().roleState.role)
+  const { routes } = useContentManagementConfig();
+  const savedRole:any = useSelector((state: any) => state.roleState.role)
   console.log("savedRole",savedRole) 
   const [roleOptions, setRoleOptions] = useState<OptionType[]>([]);
   const [wholeSellerConfig, setWholeSellerConfig] = useState<boolean>(false);
@@ -429,7 +430,7 @@ function ManageHomeScreen(props: ManageHomeScreenProps) {
             <button
               className="manage-home-screen-create-new"
               onClick={() => {
-                 navigate('/create-block',{
+                 navigate(routes.createBlock,{
                   state: {
                     step: 'create-block',
                     blocks,

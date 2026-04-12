@@ -1,4 +1,8 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import {
+  buildContentManagementRoutes,
+  type ContentManagementResolvedRoutes,
+} from "./contentRoutes";
 
 export interface ContentManagementFeatures {
   /** Show banner management. Default: true */
@@ -28,40 +32,84 @@ export interface ContentManagementConfig {
   features?: ContentManagementFeatures;
   endpoints?: Record<string, string>;
   services?: ContentManagementServiceOverrides;
+  /**
+   * Prefix for all content-management URLs (no trailing slash).
+   * Example: `/content` → `/content/banner`, `/content/create-banner`, …
+   */
+  routePrefix?: string;
+  /** Target for "Back to dashboard" (sidebar). Default `/dashboard`. */
+  exitPath?: string;
 }
 
-const defaultConfig: Required<ContentManagementConfig> = {
-  features: {
-    banner: true,
-    bucket: true,
-    basket: true,
-    block: true,
-    homescreen: true,
-  },
+export type { ContentManagementResolvedRoutes };
+
+export interface ContentManagementContextValue
+  extends Required<Omit<ContentManagementConfig, "routePrefix" | "exitPath">> {
+  routePrefix: string;
+  exitPath: string;
+  routes: ContentManagementResolvedRoutes;
+}
+
+const defaultFeatures = {
+  banner: true,
+  bucket: true,
+  basket: true,
+  block: true,
+  homescreen: true,
+};
+
+const defaultRoutes = buildContentManagementRoutes("");
+
+const defaultContextValue: ContentManagementContextValue = {
+  features: defaultFeatures,
   endpoints: {},
   services: {},
+  routePrefix: "",
+  exitPath: "/dashboard",
+  routes: defaultRoutes,
 };
 
 const ContentManagementConfigContext =
-  createContext<Required<ContentManagementConfig>>(defaultConfig);
+  createContext<ContentManagementContextValue>(defaultContextValue);
 
 export const ContentManagementProvider: React.FC<{
   config?: ContentManagementConfig;
   children: React.ReactNode;
 }> = ({ config = {}, children }) => {
-  const merged: Required<ContentManagementConfig> = {
-    ...defaultConfig,
-    ...config,
-    features: { ...defaultConfig.features, ...config.features },
-    endpoints: { ...defaultConfig.endpoints, ...config.endpoints },
-    services: { ...defaultConfig.services, ...config.services },
-  };
+  const routePrefix = useMemo(
+    () => (config.routePrefix ?? "").replace(/\/$/, ""),
+    [config.routePrefix]
+  );
+  const routes = useMemo(
+    () => buildContentManagementRoutes(routePrefix),
+    [routePrefix]
+  );
+
+  const value = useMemo<ContentManagementContextValue>(
+    () => ({
+      features: { ...defaultFeatures, ...config.features },
+      endpoints: { ...defaultContextValue.endpoints, ...config.endpoints },
+      services: { ...defaultContextValue.services, ...config.services },
+      routePrefix,
+      exitPath: config.exitPath ?? defaultContextValue.exitPath,
+      routes,
+    }),
+    [
+      config.features,
+      config.endpoints,
+      config.services,
+      config.exitPath,
+      routePrefix,
+      routes,
+    ]
+  );
+
   return (
-    <ContentManagementConfigContext.Provider value={merged}>
+    <ContentManagementConfigContext.Provider value={value}>
       {children}
     </ContentManagementConfigContext.Provider>
   );
 };
 
-export const useContentManagementConfig = () =>
+export const useContentManagementConfig = (): ContentManagementContextValue =>
   useContext(ContentManagementConfigContext);

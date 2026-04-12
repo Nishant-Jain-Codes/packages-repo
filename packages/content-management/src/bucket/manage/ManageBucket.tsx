@@ -8,6 +8,7 @@ import { fetchAllBuckets } from '../../services/manageBucketService';
 import { metaDataBatchPayload, popupType } from '@/types';
 import { bucketActionType } from './ManageBucketTypes';
 import { useNavigate } from 'react-router-dom';
+import { useContentManagementConfig } from '@/provider';
 import Switch from "react-switch";
 import { ConfirmationPopUp } from '@/components/confirmationPopUp';
 import { Loader } from '@/components/loader/Loader';
@@ -95,6 +96,7 @@ const ManageBucket = (props: { hideBackButton?: boolean }) => {
     
   }
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
   useEffect(() => {
     getAndSetBuckets();
   },[])
@@ -358,7 +360,7 @@ const ManageBucket = (props: { hideBackButton?: boolean }) => {
                   if(!currentBucket.bannerIds && currentBucket.bannerId){
                     currentBucket.bannerIds = [currentBucket.bannerId]
                   }
-                    navigate('/create-bucket',{
+                    navigate(routes.createBucket,{
                       state: {
                         step: 'create-bucket',
                         buckets: allBuckets,
@@ -368,7 +370,7 @@ const ManageBucket = (props: { hideBackButton?: boolean }) => {
                     })
                 }else{
                   resetBanner();
-                  navigate('/create-bucket',{
+                  navigate(routes.createBucket,{
                     state: {
                       step: 'create-bucket',
                       buckets: allBuckets,
@@ -494,7 +496,7 @@ const ManageBucket = (props: { hideBackButton?: boolean }) => {
                 className="manage-bucket-create-new"
                 onClick={() => {
                   resetBanner();
-                   navigate('/create-bucket',{
+                   navigate(routes.createBucket,{
                     state: {
                       step: 'create-bucket',
                       buckets: allBuckets,

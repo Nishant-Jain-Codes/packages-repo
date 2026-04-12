@@ -13,6 +13,7 @@ import { defaultBasketConfig, ManageBasketConfig, manageBasketSearchParams } fro
 import "./ManageBasket.css";
 
 import { useNavigate } from "react-router-dom";
+import { useContentManagementConfig } from "@/provider";
 import { metaDataBatchPayload, popupType } from "@/types";
 import { ConfirmationPopUp } from "@/components/confirmationPopUp";
 import {
@@ -33,6 +34,7 @@ const ManageBasket = (props: { hideBackButton?: boolean}) => {
   const [rows, setRows] = useState<valueType[]>([]);
   const [loader, setLoader] = useState(true);
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
 
   const [genericModalState, setGenericModalState] = useState(false);
   const [genericModalMessage, setGenericModalSMessage] = useState("");
@@ -356,7 +358,7 @@ const ManageBasket = (props: { hideBackButton?: boolean}) => {
                 lineHeight: '1'
               }}
               onClick={() => {
-                navigate("/create-basket", {
+                navigate(routes.createBasket, {
                   state: {
                     step: 'create-basket',
                     row: params.row,
@@ -489,7 +491,7 @@ const ManageBasket = (props: { hideBackButton?: boolean}) => {
             <Button
               className="manage-basket-create-new"
               onClick={() => {
-                navigate("/create-basket", {
+                navigate(routes.createBasket, {
                   state: {
                     step: 'create-basket',
                     row: {

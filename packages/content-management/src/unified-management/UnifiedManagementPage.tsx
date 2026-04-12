@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ChevronLeft, ChevronRight, Image, Folder, ShoppingBasket, Grid3x3, User, Home, Layout } from 'lucide-react';
@@ -12,7 +12,8 @@ import CreateBucket from '@/features/content-management/bucket/create/CreateBuck
 import CreateBasket from '@/features/content-management/basket/create/CreateBasket';
 import CreateBlock from '@/features/content-management/block/create/CreateBlock';
 import { RoleSelectionModal } from './RoleSelectionModal';
-import { store } from '@/utils/UtilityService';
+import { useContentManagementConfig } from '@/provider';
+import { stripRoutePrefix, type ContentManagementResolvedRoutes } from '@/contentRoutes';
 
 type OptionType = 'banner' | 'bucket' | 'basket' | 'block' | 'homeScreenManagement';
 type ViewType = 'manage' | 'create';
@@ -69,19 +70,53 @@ const OPTIONS: ManagementOption[] = [
   },
 ];
 
-const MANAGE_PATHS = ['/banner', '/bucket', '/basket', '/block', '/homeScreenManagement'];
+const MANAGE_REL = ['/banner', '/bucket', '/basket', '/block', '/homeScreenManagement'];
+
+function optionPath(optionId: OptionType, routes: ContentManagementResolvedRoutes): string {
+  switch (optionId) {
+    case 'homeScreenManagement':
+      return routes.homeScreenManagement;
+    case 'banner':
+      return routes.banner;
+    case 'bucket':
+      return routes.bucket;
+    case 'basket':
+      return routes.basket;
+    case 'block':
+      return routes.block;
+    default:
+      return routes.banner;
+  }
+}
 
 export const UnifiedManagementPage: React.FC = () => {
   const realNavigate = useNavigate();
   const location = useLocation();
+  const { routes, routePrefix, exitPath } = useContentManagementConfig();
   const navigationContext = React.useContext(UNSAFE_NavigationContext);
-  const savedRole: any = useSelector(() => store.getState().roleState.role);
+  const savedRole: any = useSelector((state: any) => state.roleState.role);
   const [currentOption, setCurrentOption] = useState<OptionType>('banner');
   const [view, setView] = useState<ViewType>('manage');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState<{ id: string; label: string } | null>(null);
   const [createData, setCreateData] = useState<any>(null);
+
+  const relativePath = useMemo(
+    () => stripRoutePrefix(location.pathname, routePrefix),
+    [location.pathname, routePrefix]
+  );
+
+  const managePathsResolved = useMemo(
+    () => [
+      routes.banner,
+      routes.bucket,
+      routes.basket,
+      routes.block,
+      routes.homeScreenManagement,
+    ],
+    [routes]
+  );
 
   useEffect(() => {
     if (savedRole && savedRole.id && savedRole.label) {
@@ -92,31 +127,67 @@ export const UnifiedManagementPage: React.FC = () => {
     }
   }, [savedRole]);
 
+  // Sync tab + view from URL (supports routePrefix)
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path.includes('/banner')) {
+    const rel = relativePath.split('?')[0] || '/';
+    if (rel.startsWith('/create-banner')) {
       setCurrentOption('banner');
-    } else if (path.includes('/bucket')) {
-      setCurrentOption('bucket');
-    } else if (path.includes('/basket')) {
-      setCurrentOption('basket');
-    } else if (path.includes('/block')) {
-      setCurrentOption('block');
-    } else if (path.includes('/homeScreenManagement')) {
-      setCurrentOption('homeScreenManagement');
+      setView('create');
+      return;
     }
-  }, []);
-
-  // When URL is a manage path (e.g. /banner), always show manage view so back from /create-banner shows list
-  useEffect(() => {
-    if (MANAGE_PATHS.includes(location.pathname)) {
+    if (rel.startsWith('/create-bucket')) {
+      setCurrentOption('bucket');
+      setView('create');
+      return;
+    }
+    if (rel.startsWith('/create-basket')) {
+      setCurrentOption('basket');
+      setView('create');
+      return;
+    }
+    if (rel.startsWith('/create-block')) {
+      setCurrentOption('block');
+      setView('create');
+      return;
+    }
+    if (rel === '/homeScreenManagement' || rel.endsWith('/homeScreenManagement')) {
+      setCurrentOption('homeScreenManagement');
+      setView('manage');
+      return;
+    }
+    if (rel === '/banner' || rel.endsWith('/banner')) {
+      setCurrentOption('banner');
+      setView('manage');
+      return;
+    }
+    if (rel === '/bucket' || rel.endsWith('/bucket')) {
+      setCurrentOption('bucket');
+      setView('manage');
+      return;
+    }
+    if (rel === '/basket' || rel.endsWith('/basket')) {
+      setCurrentOption('basket');
+      setView('manage');
+      return;
+    }
+    if (rel === '/block' || rel.endsWith('/block')) {
+      setCurrentOption('block');
       setView('manage');
     }
-  }, [location.pathname]);
+  }, [relativePath]);
 
-  const activeOption = OPTIONS.find(o => o.id === currentOption) || OPTIONS[0];
-  // Derive from URL so /banner always shows manage view (fixes wrong content after success from /create-banner)
-  const isManagePath = MANAGE_PATHS.includes(location.pathname);
+  // When URL is a manage path, always show manage view
+  useEffect(() => {
+    const rel = relativePath.split('?')[0] || '/';
+    if (MANAGE_REL.includes(rel) || managePathsResolved.includes(location.pathname)) {
+      setView('manage');
+    }
+  }, [location.pathname, relativePath, managePathsResolved]);
+
+  const activeOption = OPTIONS.find((o) => o.id === currentOption) || OPTIONS[0];
+  const relClean = relativePath.split('?')[0] || '/';
+  const isManagePath =
+    MANAGE_REL.includes(relClean) || managePathsResolved.includes(location.pathname);
   const effectiveView = isManagePath ? 'manage' : view;
   const ActiveComponent = effectiveView === 'manage' ? activeOption.manageComponent : activeOption.createComponent;
 
@@ -124,18 +195,18 @@ export const UnifiedManagementPage: React.FC = () => {
     setCurrentOption(optionId);
     setView('manage');
     setCreateData(null);
-    realNavigate(`/${optionId}`, { replace: true });
+    realNavigate(optionPath(optionId, routes), { replace: true });
   };
 
-  const navigateToCreate = (data?: any) => {
+  const navigateToCreate = useCallback((data?: any) => {
     setView('create');
     setCreateData(data);
-  };
+  }, []);
 
-  const navigateToManage = () => {
+  const navigateToManage = useCallback(() => {
     setView('manage');
     setCreateData(null);
-  };
+  }, []);
 
   useEffect(() => {
     if (view === 'create') {
@@ -147,7 +218,24 @@ export const UnifiedManagementPage: React.FC = () => {
         window.history.back = originalBack;
       };
     }
-  }, [view]);
+  }, [view, navigateToManage]);
+
+  const manageNavTargets = useMemo(
+    () =>
+      new Set<string>([
+        routes.banner,
+        routes.bucket,
+        routes.basket,
+        routes.block,
+        routes.homeScreenManagement,
+        '/banner',
+        '/bucket',
+        '/basket',
+        '/block',
+        '/homeScreenManagement',
+      ]),
+    [routes]
+  );
 
   const customNavigationContext = React.useMemo(() => {
     if (!navigationContext) return navigationContext;
@@ -167,7 +255,7 @@ export const UnifiedManagementPage: React.FC = () => {
         encodeLocation: navigationContext.navigator.encodeLocation,
         push: (to: any, state?: any) => {
           const path = typeof to === 'string' ? to : to.pathname;
-          if (path === '/banner' || path === '/bucket' || path === '/basket' || path === '/block' || path === '/homeScreenManagement') {
+          if (manageNavTargets.has(path)) {
             navigateToCreate(state);
           } else {
             navigationContext.navigator.push(to, state);
@@ -175,7 +263,7 @@ export const UnifiedManagementPage: React.FC = () => {
         },
         replace: (to: any, state?: any) => {
           const path = typeof to === 'string' ? to : to.pathname;
-          if (path === '/banner' || path === '/bucket' || path === '/basket' || path === '/block' || path === '/homeScreenManagement') {
+          if (manageNavTargets.has(path)) {
             navigateToCreate(state);
           } else {
             navigationContext.navigator.replace(to, state);
@@ -183,14 +271,13 @@ export const UnifiedManagementPage: React.FC = () => {
         },
       },
     };
-  }, [navigationContext, view, navigateToCreate, navigateToManage]);
+  }, [navigationContext, view, navigateToCreate, navigateToManage, manageNavTargets]);
 
   const handleRoleSelected = (role: { id: string; label: string }) => {
     setSelectedRole(role);
     setShowRoleModal(false);
   };
 
-  // Don't render content until role is selected
   if (!selectedRole) {
     return <RoleSelectionModal open={showRoleModal} onRoleSelected={handleRoleSelected} />;
   }
@@ -266,10 +353,9 @@ export const UnifiedManagementPage: React.FC = () => {
             })}
           </div>
 
-          {/* Back to Dashboard Button */}
           <div className="px-5 pb-5 mt-auto border-t border-slate-200 pt-4">
             <button
-              onClick={() => realNavigate('/dashboard')}
+              onClick={() => realNavigate(exitPath)}
               className="w-full flex items-center gap-3 p-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-all duration-200 group"
             >
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-slate-200 transition-all">
@@ -284,7 +370,6 @@ export const UnifiedManagementPage: React.FC = () => {
           </div>
         </aside>
 
-          {/* Main Content */}
           <main className="flex-1 h-full overflow-auto">
             <ActiveComponent hideBackButton={true} />
           </main>
@@ -293,4 +378,3 @@ export const UnifiedManagementPage: React.FC = () => {
     </UNSAFE_NavigationContext.Provider>
   );
 };
-

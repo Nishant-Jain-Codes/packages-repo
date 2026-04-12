@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useContentManagementConfig } from '@/provider';
 import { BannerPreview } from '@/components/bannerPreview/BannerPreview';
 import GenricMultiSelect from '@/features/content-management/shared/GenericMultiSelect';
 import { Loader } from '@/components/loader/Loader';
@@ -17,6 +18,7 @@ import { defaultTokenNew, tokenNew } from '@/utils/networkServiceSimple';
 function BannerSelection(props: BannerSelectionProps) {
     const location = useLocation();
     const navigate = useNavigate();
+    const { routes } = useContentManagementConfig();
     const locationState: createBucketNavigate = location.state as createBucketNavigate;
     const [bannerOptions,setBannerOptions] = useState<string[]>([]);
     const [selectedBanners,setSelectedBanners] = useState<string[]>([]);
@@ -142,14 +144,14 @@ function BannerSelection(props: BannerSelectionProps) {
             const bannerData = {...targetBanner.current, bannerTemplateType: bannerTemplates.find((bannerTemplate) => targetBanner.current?.bannerType === bannerTemplate.id)?.label};
             // setCurrentBanner(bannerData as bannerData);
             if (bannerData?.extendedAttributes?.bannerV2) {
-                navigate("/create-banner", {
+                navigate(routes.createBanner, {
                     state: {
                         isBucketEdit: true,
                         currentBanner: bannerData
                     }
                 });
             } else {
-                navigate("/create-banner", {
+                navigate(routes.createBanner, {
                     state: {
                         isBucketEdit: true,
                         currentBanner: bannerData

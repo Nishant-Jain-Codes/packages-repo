@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useNavigate } from 'react-router-dom';
+import { useContentManagementConfig } from '@/provider';
 import Switch from 'react-switch';
 import { DragDropTableProps } from '@/features/content-management/homescreen/manage/ManageHomePageTypes';
 import { ManageHomePageConfig } from '@/features/content-management/homescreen/manage/ManageHomeScreenConfig';
@@ -13,6 +14,7 @@ const DragDropTable = (props: DragDropTableProps & { showNormalTable?: boolean }
   const CUR_COMPONENT = "Manage Home Screen"
   const CUR_COMPONENT_COMMON="commonPortal";
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
   function handleDragOnEnd(result: DropResult) {
     if(result.destination!==null){
       const items = Array.from(props.data);
@@ -34,7 +36,7 @@ const DragDropTable = (props: DragDropTableProps & { showNormalTable?: boolean }
                               disabled={!isInnerComponentPresent}
                               onClick={async () => {
                                 props.setShowLoader(true);
-                                navigate('/create-block',{
+                                navigate(routes.createBlock,{
                                       state: {
                                         step: 'create-block',
                                         currentBlock: row,

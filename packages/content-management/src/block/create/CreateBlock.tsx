@@ -28,8 +28,7 @@ import { getLob } from '@/utils/UtilityService';
 import axios from "axios";
 import cloneDeep from 'lodash.clonedeep';
 import { useSelector } from 'react-redux';
-import { store } from '@/utils/UtilityService';
-import { use } from 'i18next';
+import { useContentManagementConfig } from '@/provider';
 
 
 
@@ -78,6 +77,7 @@ function CreateBlock() {
   const CUR_COMPONENT_COMMON="commonPortal";
   const CUR_COMPONENT = "Manage Home Screen"
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
   const [view,setView] = useState<viewType>("create");
   const location  = useLocation();
   const locationState: blockNavigateState = location.state as blockNavigateState;
@@ -112,7 +112,7 @@ function CreateBlock() {
   const [OtherblockTypes,setOtherBlockTypes] = useState<any[]>();
   const [blockTypes,setBlockTypes] = useState<any[]>(blockGeneralTypes);
   const [otherBlockPresent,setOtherBlockPresent] = useState<boolean>(false);
-  const savedRole:any = useSelector(() => store.getState().roleState.role)
+  const savedRole:any = useSelector((state: any) => state.roleState.role)
   console.log("createblockrole",savedRole)
   const [saleshubPostAPI, setSaleshubPostAPI] = useState<boolean>(false);
   const [useSaleshub, setUseSaleshub] = useState<boolean>(false);
@@ -399,19 +399,19 @@ function CreateBlock() {
       // 
       if(redirectToRef.current && !isChange){
         if(redirectToRef.current==="banner"){
-          navigate("/dashboard/newManageBannerStudio/banner",{
+          navigate(routes.dashboardBanner,{
             state: {
                 blockData:newBlockData
             }})
         }
         if(redirectToRef.current==="bucket"){
-          navigate("/dashboard/manageBucketStudio/createBucket",{
+          navigate(routes.dashboardCreateBucket,{
             state: {
                 blockData:newBlockData
             }})
         }
         if(redirectToRef.current==="basket"){
-          navigate("/dashboard/manageBasketStudio/createBasket",{
+          navigate(routes.dashboardCreateBasket,{
             state: {
                 blockData:newBlockData
             }})

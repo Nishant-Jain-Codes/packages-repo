@@ -10,8 +10,8 @@ import { Banner, bannerMockData, BannerTemplate, configurationAttributeType, get
 import { fetchAllBaskets, fetchAllSKUcodes, fetchNewSchemesOptions, fetchProductFiltersOptions, fetchSchemesOptions, getAllBanners, getConfigFromClientConfig, getFinalBannerTemplates, getGlobalFilters, getSalesHubUniqueProductCategories, getUniqueProductCategories, makeBannerDistributionData, sendBannerDistribution, uploadImages, validateBannerResponse, validateGoogleUrl, validateYoutubeUrl } from '../../services/bannerServices';
 import { GenericPopUp } from '@/components/popup/genericPopUp';
 import { popupType } from '@/types';
-import { store } from '@/utils/UtilityService';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useContentManagementConfig } from '@/provider';
 import { bannerData, bannerDescriptionKeys, bannerDescriptionState, bannerElementExtendedAttributes, bannerElementState, bannerfilterConfigObj, bannerLocationState, bannerProductFilterMappingObj, bannerV2DataPayload, categoryElementComponents, CreateBannerProps, languageBannerState, mediaNameIdType, productParam} from '@/features/content-management/banner/create/bannerTypes';
 // import GenericFilters from '../../components/genericFilters/genericFilters';
 import { getCurrentGlobalFilterObject } from '@/utils/UtilityService';
@@ -144,6 +144,7 @@ function CreateNewBanner(props: CreateBannerProps) {
   const { translate } = usePortalTranslation();  
   const location = useLocation();
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
 //   const locationState: bannerLocationState  = location.state as bannerLocationState;
   const locationState: any  = location.state as any;
   const [isEdit,setIsEdit] = React.useState<boolean>(false);
@@ -179,7 +180,7 @@ function CreateNewBanner(props: CreateBannerProps) {
     blockConfigEnabled: false,
     isChanged: false
   })
-  const savedRole:any = useSelector(() => store.getState().roleState.role)
+  const savedRole:any = useSelector((state: any) => state.roleState.role)
 const [roleOptions, setRoleOptions] = useState<OptionType[]>([]);
 const [isMapped, setIsMapped] = useState<boolean>(false);
 const [saleshubPostAPI, setSaleshubPostAPI] = useState<boolean>(false);
@@ -2312,7 +2313,7 @@ console.log("selectedBannerBehaviour",selectedBannerBehaviour,"selectedOption",s
         <GenericPopUp type={popupType} message={popupMessage} setOpenGenericModal={popupType==="Success"? () => {
             setOpenGenericModal(false);
             setBannerUpdateStatus(true); //setting update status to true so that can check for remove queryParams on manageBanner
-            navigate('/banner', { replace: true });
+            navigate(routes.banner, { replace: true });
         } :setOpenGenericModal} openGenericModal={openGenericModal} />
       </Paper>}
     </BannerContext.Provider> 

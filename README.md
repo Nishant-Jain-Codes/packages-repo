@@ -5,9 +5,9 @@ This repo is a **workspaces monorepo** that publishes packages to **GitHub Packa
 ## Packages
 
 - `@aditya-sharma-salescode/shared-ui`
-- `@aditya-sharma-salescode/form-builder`
+- `@aditya-sharma-salescode/form-builder` — use **`FormBuilderStandalone`** or **`FormBuilderPlugIn`** for all routes in one import (see package README).
 - `@aditya-sharma-salescode/reports-setup`
-- `@aditya-sharma-salescode/content-management`
+- `@aditya-sharma-salescode/content-management` — use **`ContentManagementStandalone`** or **`ContentManagementPlugIn`** (see package README).
 
 ## Install (from another repo)
 

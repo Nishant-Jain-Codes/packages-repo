@@ -1,6 +1,7 @@
 import { CircularProgress } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useContentManagementConfig } from '@/provider';
 import { Loader } from '@/components/loader/Loader';
 import DragDropTable from '@/features/content-management/homescreen/components/DragDropTable';
 import { ConfirmationPopUp } from '@/components/confirmationPopUp';
@@ -50,6 +51,7 @@ function ManageHomeScreenOld(props: ManageHomeScreenProps) {
   const clientConfigRef = useRef<any[]>([]);
   const allBanners = useRef<any[] | null>(null);
   const navigate = useNavigate();
+  const { routes } = useContentManagementConfig();
 
   async function deleteInnerComponent(targetBlock: any,action: manageBlockAction){
     switch(targetBlock.type){
@@ -311,7 +313,7 @@ function ManageHomeScreenOld(props: ManageHomeScreenProps) {
             <button
               className="manage-home-screen-create-new"
               onClick={() => {
-                 navigate('/create-block',{
+                 navigate(routes.createBlock,{
                   state: {
                     step: 'create-block',
                     blocks,

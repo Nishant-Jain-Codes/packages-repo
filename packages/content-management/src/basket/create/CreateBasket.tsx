@@ -379,7 +379,7 @@ const CreateBasket = (props: CreateBasketProps) => {
     blockConfigEnabled: false,
     isChanged: false
   })
-  const savedRole:any = useSelector(() => store.getState().roleState.role) 
+  const savedRole:any = useSelector((state: any) => state.roleState.role) 
   const [roleOptions, setRoleOptions] = useState<OptionType[]>([]);
   console.log("roleOptions",roleOptions)
   useEffect(()=>{

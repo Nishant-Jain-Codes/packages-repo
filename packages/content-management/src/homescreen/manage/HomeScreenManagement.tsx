@@ -64,7 +64,7 @@ function HomeScreenManagement(props: ManageHomeScreenProps) {
     const clientConfigRef = useRef<any[]>([]);
     const allBanners = useRef<any[] | null>(null);
     const navigate = useNavigate();
-    const savedRole: any = useSelector(() => store.getState().roleState.role)
+    const savedRole: any = useSelector((state: any) => state.roleState.role)
     console.log("savedRole", savedRole)
     const [roleOptions, setRoleOptions] = useState<OptionType[]>([]);
     const [playgroundConfiguration, setPlayGroundConfiguration] = useState<

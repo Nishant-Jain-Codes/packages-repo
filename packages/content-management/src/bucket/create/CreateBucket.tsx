@@ -339,7 +339,7 @@ const [selectedDimension, setSelectedDimension] = useState(carouselDimensions[0]
     blockConfigEnabled: false,
     isChanged: false
   })
-  const savedRole:any = useSelector(() => store.getState().roleState.role)
+  const savedRole:any = useSelector((state: any) => state.roleState.role)
   const [roleOptions, setRoleOptions] = useState<OptionType[]>([]);
   const [startDate, setStartDate] = React.useState<Dayjs | null>(
     null
