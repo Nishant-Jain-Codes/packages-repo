@@ -34,6 +34,8 @@ export interface FieldDataSource {
   labelKey?: string;      // which property to use as display label, e.g. "name"
   valueKey?: string;      // which property to use as value, e.g. "id"
   headers?: Record<string, string>;
+  dependsOn?: string;     // parent field id for cascading dropdowns
+  optionsFormat?: string; // e.g. "stringList", "objectList"
 }
 
 export interface FieldPrefill {
@@ -46,6 +48,7 @@ export interface FormField {
   id: string;
   type: FieldType;
   label: string;
+  hideLabel?: boolean;
   placeholder?: string;
   hintText?: string;
   required: boolean;
@@ -67,6 +70,9 @@ export interface FormField {
   // camera
   allowGallery?: boolean;
   allowCamera?: boolean;
+  captureLocationWithImage?: boolean;
+  linkedLatFieldId?: string;
+  linkedLngFieldId?: string;
   // location
   displayMode?: "map" | "coordinates" | "address";
   // conditional logic (future)

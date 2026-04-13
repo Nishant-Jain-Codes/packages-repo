@@ -57,6 +57,19 @@ export function FieldEditor() {
     update({ prefill: { ...field.prefill, ...updates } });
   };
 
+  const updateCondition = (updates: Partial<NonNullable<FormField["condition"]>>) => {
+    update({
+      condition: {
+        fieldId: field.condition?.fieldId || "",
+        operator: field.condition?.operator || "equals",
+        value: field.condition?.value || "",
+        ...updates,
+      },
+    });
+  };
+
+  const fieldOptions = schema.sections.flatMap((section) => section.fields);
+
   return (
     <div className="w-[300px] border-l bg-card/50 flex flex-col shrink-0">
       <div className="flex items-center justify-between p-3 border-b">
@@ -109,6 +122,28 @@ export function FieldEditor() {
               onCheckedChange={(checked) => update({ required: checked })}
             />
           </div>
+
+          {/* Hide Label */}
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Hide Label</Label>
+            <Switch
+              checked={field.hideLabel || false}
+              onCheckedChange={(checked) => update({ hideLabel: checked })}
+            />
+          </div>
+
+          {/* Default Value */}
+          {["text", "textarea", "email", "number", "tel", "url", "date", "date-range"].includes(field.type) && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Default Value</Label>
+              <Input
+                value={field.defaultValue == null ? "" : String(field.defaultValue)}
+                onChange={(e) => update({ defaultValue: e.target.value })}
+                className="h-8 text-sm"
+                placeholder="Optional default value"
+              />
+            </div>
+          )}
 
           <Separator />
 
@@ -200,6 +235,33 @@ export function FieldEditor() {
                   checked={field.allowGallery !== false}
                   onCheckedChange={(checked) => update({ allowGallery: checked })}
                 />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">Capture Location With Image</Label>
+                <Switch
+                  checked={field.captureLocationWithImage || false}
+                  onCheckedChange={(checked) => update({ captureLocationWithImage: checked })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Linked Lat Field ID</Label>
+                  <Input
+                    value={field.linkedLatFieldId || ""}
+                    onChange={(e) => update({ linkedLatFieldId: e.target.value })}
+                    className="h-8 text-sm"
+                    placeholder="latitudeField"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Linked Lng Field ID</Label>
+                  <Input
+                    value={field.linkedLngFieldId || ""}
+                    onChange={(e) => update({ linkedLngFieldId: e.target.value })}
+                    className="h-8 text-sm"
+                    placeholder="longitudeField"
+                  />
+                </div>
               </div>
             </>
           )}
@@ -337,6 +399,45 @@ export function FieldEditor() {
                           />
                         </div>
                       </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Depends On Field ID</Label>
+                        <Input
+                          value={field.dataSource.dependsOn || ""}
+                          onChange={(e) => updateDataSource({ dependsOn: e.target.value })}
+                          className="h-8 text-sm font-mono"
+                          placeholder="parentFieldId"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Options Format</Label>
+                        <Input
+                          value={field.dataSource.optionsFormat || ""}
+                          onChange={(e) => updateDataSource({ optionsFormat: e.target.value })}
+                          className="h-8 text-sm font-mono"
+                          placeholder="stringList"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Headers (JSON)</Label>
+                        <Input
+                          value={field.dataSource.headers ? JSON.stringify(field.dataSource.headers) : ""}
+                          onChange={(e) => {
+                            const raw = e.target.value.trim();
+                            if (!raw) {
+                              updateDataSource({ headers: undefined });
+                              return;
+                            }
+                            try {
+                              const parsed = JSON.parse(raw) as Record<string, string>;
+                              updateDataSource({ headers: parsed });
+                            } catch {
+                              // Keep current value until valid JSON is provided.
+                            }
+                          }}
+                          className="h-8 text-sm font-mono"
+                          placeholder='{"x-tenant":"tenant_slug"}'
+                        />
+                      </div>
                     </div>
                   )}
                 </>
@@ -392,6 +493,76 @@ export function FieldEditor() {
           </Collapsible>
 
           <Separator />
+
+          {/* Conditional visibility */}
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left">
+              <span className="text-xs font-semibold text-foreground">Conditional Visibility</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3 space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">When field</Label>
+                <Select
+                  value={field.condition?.fieldId || "__none__"}
+                  onValueChange={(val) => {
+                    if (val === "__none__") {
+                      update({ condition: null });
+                      return;
+                    }
+                    updateCondition({ fieldId: val });
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No condition</SelectItem>
+                    {fieldOptions
+                      .filter((candidate) => candidate.id !== field.id)
+                      .map((candidate) => (
+                        <SelectItem key={candidate.id} value={candidate.id}>
+                          {candidate.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Operator</Label>
+                  <Select
+                    value={field.condition?.operator || "equals"}
+                    onValueChange={(val) =>
+                      updateCondition({
+                        operator: val as "equals" | "not_equals" | "contains" | "not_empty",
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="equals">equals</SelectItem>
+                      <SelectItem value="not_equals">not_equals</SelectItem>
+                      <SelectItem value="contains">contains</SelectItem>
+                      <SelectItem value="not_empty">not_empty</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Value</Label>
+                  <Input
+                    value={field.condition?.value || ""}
+                    onChange={(e) => updateCondition({ value: e.target.value })}
+                    className="h-8 text-sm"
+                    placeholder="Leave"
+                    disabled={(field.condition?.operator || "equals") === "not_empty"}
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Validation */}
           <Collapsible>

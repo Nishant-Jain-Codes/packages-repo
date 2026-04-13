@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 
 function FieldRenderer({ field }: { field: FormField }) {
   const [sliderValue, setSliderValue] = useState([field.sliderMin ?? 0]);
+  const defaultText =
+    field.defaultValue == null ? undefined : String(field.defaultValue);
 
   switch (field.type) {
     case "text":
@@ -39,7 +41,7 @@ function FieldRenderer({ field }: { field: FormField }) {
       return (
         <input
           type={field.type === "text" ? "text" : field.type}
-          placeholder={field.placeholder}
+          placeholder={field.placeholder || defaultText}
           className="w-full h-10 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
         />
       );
@@ -47,7 +49,7 @@ function FieldRenderer({ field }: { field: FormField }) {
     case "textarea":
       return (
         <textarea
-          placeholder={field.placeholder}
+          placeholder={field.placeholder || defaultText}
           rows={3}
           className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 resize-none"
         />
@@ -155,6 +157,9 @@ function FieldRenderer({ field }: { field: FormField }) {
                 ? "Tap to capture"
                 : "Tap to upload"}
             </p>
+            {field.captureLocationWithImage && (
+              <p className="text-[11px] text-gray-400 mt-1">Location capture enabled</p>
+            )}
           </div>
         </div>
       );
@@ -247,15 +252,17 @@ export function FormPreview() {
                   <div className="space-y-4">
                     {section.fields.map((field) => (
                       <div key={field.id}>
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {field.label}
-                          </label>
-                          {field.required && (
-                            <span className="text-red-500 text-xs">*</span>
-                          )}
-                          <ApiBindingBadge field={field} />
-                        </div>
+                        {!field.hideLabel && (
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {field.label}
+                            </label>
+                            {field.required && (
+                              <span className="text-red-500 text-xs">*</span>
+                            )}
+                            <ApiBindingBadge field={field} />
+                          </div>
+                        )}
                         <FieldRenderer field={field} />
                         {field.hintText && (
                           <p className="text-[11px] text-gray-400 mt-1">{field.hintText}</p>

@@ -224,6 +224,7 @@ function buildField(def: { type: FieldType; label: string; required: boolean; ex
     id: uuidv4(),
     type: def.type,
     label: def.label,
+    hideLabel: false,
     required: def.required,
     validation: {},
     placeholder: def.type === "text" || def.type === "textarea" || def.type === "email" || def.type === "tel" || def.type === "url" || def.type === "number"
@@ -237,6 +238,9 @@ function buildField(def: { type: FieldType; label: string; required: boolean; ex
     showDifference: def.extra?.showDifference,
     allowCamera: def.extra?.allowCamera,
     allowGallery: def.extra?.allowGallery,
+    captureLocationWithImage: false,
+    linkedLatFieldId: "",
+    linkedLngFieldId: "",
     displayMode: def.extra?.displayMode as any,
     defaultValue: null,
     condition: null,
