@@ -65,7 +65,7 @@ const customCollision: CollisionDetection = (args) => {
 export function FormBuilder() {
   const navigate = useNavigate();
   const { activityId } = useParams<{ activityId?: string }>();
-  const { services, routes } = useFormBuilderConfig();
+  const { services, routes, features } = useFormBuilderConfig();
   const { getActivity, updateActivitySchema, loadFromLocalStorage: loadActivities } = useActivityStore();
   const {
     schema,
@@ -104,6 +104,11 @@ export function FormBuilder() {
   const [jiraLoading, setJiraLoading] = useState(false);
   const [aiGenerating, setAiGenerating] = useState(false);
   const [loadedTicket, setLoadedTicket] = useState<{ key: string; summary: string } | null>(null);
+  const showFetchJira = features.fetchJira !== false;
+  const showJsonViewer = features.jsonViewer !== false;
+  const showJsonImport = features.jsonImport !== false;
+  const showJsonExport = features.jsonExport !== false;
+  const showAnyJsonHeaderAction = showJsonViewer || showJsonImport || showJsonExport;
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -377,14 +382,16 @@ export function FormBuilder() {
           <div className="flex-1" />
 
           {/* Jira Prompt Bar - centered */}
-          <div className="w-[440px] hidden lg:block">
-            <AiPromptBar
-              onFetchJira={handleFetchJira}
-              isLoading={jiraLoading}
-              aiGenerating={aiGenerating}
-              loadedTicket={loadedTicket}
-            />
-          </div>
+          {showFetchJira && (
+            <div className="w-[440px] hidden lg:block">
+              <AiPromptBar
+                onFetchJira={handleFetchJira}
+                isLoading={jiraLoading}
+                aiGenerating={aiGenerating}
+                loadedTicket={loadedTicket}
+              />
+            </div>
+          )}
 
           <div className="flex-1" />
 
@@ -430,22 +437,28 @@ export function FormBuilder() {
           <Separator orientation="vertical" className="h-6" />
 
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => setShowJsonDialog(true)}
-              title="View JSON"
-            >
-              <Code className="h-3.5 w-3.5" />
-              JSON
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleImport} title="Import JSON">
-              <Upload className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExport} title="Export JSON">
-              <Download className="h-4 w-4" />
-            </Button>
+            {showJsonViewer && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs gap-1.5"
+                onClick={() => setShowJsonDialog(true)}
+                title="View JSON"
+              >
+                <Code className="h-3.5 w-3.5" />
+                JSON
+              </Button>
+            )}
+            {showJsonImport && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleImport} title="Import JSON">
+                <Upload className="h-4 w-4" />
+              </Button>
+            )}
+            {showJsonExport && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleExport} title="Export JSON">
+                <Download className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -457,7 +470,7 @@ export function FormBuilder() {
             </Button>
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
+          {showAnyJsonHeaderAction && <Separator orientation="vertical" className="h-6" />}
 
           <Button
             variant="ghost"
@@ -505,13 +518,15 @@ export function FormBuilder() {
         </div>
 
         {/* Jira bar for smaller screens */}
-        <div className="lg:hidden mt-2">
-          <AiPromptBar
-            onFetchJira={handleFetchJira}
-            isLoading={jiraLoading}
-            loadedTicket={loadedTicket}
-          />
-        </div>
+        {showFetchJira && (
+          <div className="lg:hidden mt-2">
+            <AiPromptBar
+              onFetchJira={handleFetchJira}
+              isLoading={jiraLoading}
+              loadedTicket={loadedTicket}
+            />
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
@@ -546,7 +561,7 @@ export function FormBuilder() {
       </DndContext>
 
       {/* JSON Dialog */}
-      <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
+      <Dialog open={showJsonDialog && showJsonViewer} onOpenChange={setShowJsonDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Form Schema (JSON)</DialogTitle>
@@ -570,9 +585,11 @@ export function FormBuilder() {
             >
               Copy to Clipboard
             </Button>
-            <Button size="sm" onClick={handleExport}>
-              Download
-            </Button>
+            {showJsonExport && (
+              <Button size="sm" onClick={handleExport}>
+                Download
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -606,8 +623,12 @@ export function FormBuilder() {
     </div>
 
       <VoiceBridge
-        onOpenJson={() => setShowJsonDialog(true)}
-        onDownload={handleExport}
+        onOpenJson={() => {
+          if (showJsonViewer) setShowJsonDialog(true);
+        }}
+        onDownload={() => {
+          if (showJsonExport) handleExport();
+        }}
         onCopyJson={async () => {
           await navigator.clipboard.writeText(exportSchemaAsJson(exportSchema()));
           toast.success("JSON copied to clipboard");

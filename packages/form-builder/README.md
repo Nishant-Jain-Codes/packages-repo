@@ -29,6 +29,37 @@ import { FormBuilderPlugIn } from "@aditya-sharma-salescode/form-builder";
 
 Then link to `/form-workspace/manage-forms` (or `/suite/manage-forms` if you used `routePrefix="/suite"`). See **`FormBuilderPlugIn`** props for `mode` (`nested` vs `root`).
 
+### Optional header controls (Jira + JSON)
+
+You can explicitly hide header actions in the builder by passing `features` flags:
+
+```tsx
+<Route
+  path="/form-workspace/*"
+  element={
+    <FormBuilderPlugIn
+      routePrefix="/form-workspace"
+      features={{
+        fetchJira: false,
+        jsonViewer: false,
+        jsonImport: false,
+        jsonExport: false,
+      }}
+    />
+  }
+/>
+```
+
+`features` options:
+
+| Flag | Default | Effect |
+|------|---------|--------|
+| `fetchJira` | `true` | Shows/hides Jira fetch/generate prompt bar |
+| `jsonViewer` | `true` | Shows/hides JSON viewer button + dialog |
+| `jsonImport` | `true` | Shows/hides JSON import button |
+| `jsonExport` | `true` | Shows/hides JSON export/download controls |
+| `reports` | `true` | Keeps report features enabled in provider config |
+
 ---
 
 ## Install
@@ -150,7 +181,17 @@ import {
 export function FormBuilderApp() {
   return (
     <BrowserRouter>
-      <FormBuilderProvider config={{ routePrefix: "/suite" }}>
+      <FormBuilderProvider
+        config={{
+          routePrefix: "/suite",
+          features: {
+            fetchJira: false,
+            jsonViewer: false,
+            jsonImport: false,
+            jsonExport: false,
+          },
+        }}
+      >
         <Routes>
           <Route path="/suite" element={<FormBuilderLayout />}>
             <Route path="manage-forms" element={<ManageForms />} />

@@ -4,6 +4,14 @@ import { buildFormBuilderRoutes, type FormBuilderResolvedRoutes } from "./routes
 export interface FormBuilderFeatures {
   /** Include report config + preview pages. Default: true */
   reports?: boolean;
+  /** Show Jira fetch/generate prompt bar in Form Builder header. Default: true */
+  fetchJira?: boolean;
+  /** Show JSON viewer button/dialog in Form Builder header. Default: true */
+  jsonViewer?: boolean;
+  /** Show JSON import button in Form Builder header. Default: true */
+  jsonImport?: boolean;
+  /** Show JSON export/download buttons in Form Builder header. Default: true */
+  jsonExport?: boolean;
 }
 
 export interface FormBuilderServiceOverrides {
@@ -38,7 +46,13 @@ const defaultRoutePrefix = "";
 const defaultRoutes = buildFormBuilderRoutes(defaultRoutePrefix);
 
 const defaultContextValue: FormBuilderContextValue = {
-  features: { reports: true },
+  features: {
+    reports: true,
+    fetchJira: true,
+    jsonViewer: true,
+    jsonImport: true,
+    jsonExport: true,
+  },
   endpoints: {},
   services: {},
   routePrefix: defaultRoutePrefix,

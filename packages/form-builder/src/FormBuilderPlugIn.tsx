@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FormBuilderProvider } from "./provider";
+import type { FormBuilderFeatures } from "./provider";
 import { FormBuilderLayout } from "./voice/FormBuilderLayout";
 import { ManageForms } from "./components/ManageForms/ManageForms";
 import { FormBuilder } from "./FormBuilder";
@@ -18,6 +19,11 @@ export interface FormBuilderPlugInProps {
    * `root` — use inside `<BrowserRouter>` at the app root (absolute redirects).
    */
   mode?: "nested" | "root";
+  /**
+   * Toggle optional header/report features.
+   * Example: `{ fetchJira: false, jsonViewer: false, jsonImport: false, jsonExport: false }`
+   */
+  features?: FormBuilderFeatures;
 }
 
 /**
@@ -31,6 +37,7 @@ export interface FormBuilderPlugInProps {
 export function FormBuilderPlugIn({
   routePrefix = "",
   mode = "nested",
+  features,
 }: FormBuilderPlugInProps) {
   const prefix = routePrefix.replace(/\/$/, "");
   const indexTo =
@@ -41,7 +48,7 @@ export function FormBuilderPlugIn({
       : "manage-forms";
 
   return (
-    <FormBuilderProvider config={{ routePrefix: prefix }}>
+    <FormBuilderProvider config={{ routePrefix: prefix, features }}>
       <Routes>
         <Route element={<FormBuilderLayout />}>
           <Route index element={<Navigate to={indexTo} replace />} />
@@ -59,13 +66,18 @@ export function FormBuilderPlugIn({
 export interface FormBuilderStandaloneProps {
   /** Optional prefix, e.g. `/forms` → URLs `/forms/manage-forms`, … */
   routePrefix?: string;
+  /** Optional feature toggles passed to FormBuilderPlugIn */
+  features?: FormBuilderFeatures;
 }
 
 /** Install, import, render — includes `BrowserRouter`. */
-export function FormBuilderStandalone({ routePrefix = "" }: FormBuilderStandaloneProps) {
+export function FormBuilderStandalone({
+  routePrefix = "",
+  features,
+}: FormBuilderStandaloneProps) {
   return (
     <BrowserRouter>
-      <FormBuilderPlugIn routePrefix={routePrefix} mode="root" />
+      <FormBuilderPlugIn routePrefix={routePrefix} mode="root" features={features} />
     </BrowserRouter>
   );
 }
