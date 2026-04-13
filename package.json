@@ -6,9 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm -r --filter \"!form-builder-verify-vite\" build",
     "dev": "pnpm -r dev",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "verify:form-builder-vite": "pnpm run build && pnpm --filter form-builder-verify-vite build"
   }
 }
 

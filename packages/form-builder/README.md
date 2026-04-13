@@ -16,18 +16,18 @@ export default function Page() {
 
 Uses URLs like `/manage-forms`, `/form-builder/:id`, `/report-preview`, …
 
-**Inside your existing router**:
+**Inside your existing router** (prefix path and `routePrefix` must match):
 
 ```tsx
 import { Route, Routes } from "react-router-dom";
 import { FormBuilderPlugIn } from "@aditya-sharma-salescode/form-builder";
 
 <Routes>
-  <Route path="/suite/*" element={<FormBuilderPlugIn routePrefix="/suite" />} />
+  <Route path="/form-workspace/*" element={<FormBuilderPlugIn routePrefix="/form-workspace" />} />
 </Routes>
 ```
 
-Then link to `/suite/manage-forms`. See **`FormBuilderPlugIn`** props for `mode` (`nested` vs `root`).
+Then link to `/form-workspace/manage-forms` (or `/suite/manage-forms` if you used `routePrefix="/suite"`). See **`FormBuilderPlugIn`** props for `mode` (`nested` vs `root`).
 
 ---
 
@@ -44,18 +44,70 @@ always-auth=true
 npm install @aditya-sharma-salescode/form-builder
 ```
 
+Publish to **GitHub Packages** (after `pnpm --filter @aditya-sharma-salescode/form-builder build` and a semver version bump): from `packages/form-builder`, run `npm publish` with `NODE_AUTH_TOKEN` and `.npmrc` pointing at `https://npm.pkg.github.com` for the `@aditya-sharma-salescode` scope (same pattern as other packages in this org).
+
 ### Peer dependencies
+
+| Package | Version |
+|---------|---------|
+| **react** | **18.x** (recommended `^18.0.0`) |
+| **react-dom** | **18.x** |
+| **react-router-dom** | **6.x** (recommended `^6.4.0`) |
 
 ```bash
 npm install react react-dom react-router-dom
 ```
 
-The app must use **React Router** — in-package navigation calls `useNavigate()` and expects matching route definitions.
+The app must use **React Router v6** — in-package navigation calls `useNavigate()` and expects matching route definitions.
 
 ### Related UI packages
 
-- **`@aditya-sharma-salescode/shared-ui`** — import **`@aditya-sharma-salescode/shared-ui/dist/index.css`**, extend Tailwind `content` to include `shared-ui`’s `dist`, and define shadcn theme CSS variables (see that package’s README).
+- **`@aditya-sharma-salescode/shared-ui`** — import **`@aditya-sharma-salescode/shared-ui/index.css`** (or **`…/dist/index.css`**), extend Tailwind `content` to include `shared-ui`’s `dist`, and define shadcn theme CSS variables (see that package’s README).
 - **`@aditya-sharma-salescode/reports-ui`** — for embedded report UIs, install a compatible version and import its global styles as that package documents.
+
+## Convai (ElevenLabs) — server `POST /api/convai/signed-url`
+
+The **`useConvaiAgent`** hook (used by the voice stack) starts ElevenLabs Conversational AI by **POSTing to the same origin**: **`/api/convai/signed-url`**. The response must be JSON **`{ "signedUrl": "<wss-or-https-url>" }`**.
+
+Your **host** — not the browser — must hold the API key. Set environment variables (names are conventional; adjust to your deployment):
+
+| Variable | Purpose |
+|----------|---------|
+| `ELEVENLABS_API_KEY` | Sent as header `xi-api-key` to the ElevenLabs API |
+| `ELEVENLABS_AGENT_ID` | Conversational AI agent id (`agent_id` query param) |
+
+Server-side, call ElevenLabs’ **get signed URL** for conversations (REST: `GET https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=…` with `xi-api-key`), then return `{ signedUrl: data.signed_url }`. In **development**, point your dev server’s proxy at a small Express/hono handler on port **8787**, or mirror the path your app uses.
+
+Example (Express):
+
+```js
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+app.post("/api/convai/signed-url", async (req, res) => {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  const agentId = process.env.ELEVENLABS_AGENT_ID;
+  if (!apiKey || !agentId) {
+    return res.status(500).json({ error: "Missing ELEVENLABS_* env" });
+  }
+  const url = new URL("https://api.elevenlabs.io/v1/convai/conversation/get-signed-url");
+  url.searchParams.set("agent_id", agentId);
+
+  const r = await fetch(url, { headers: { "xi-api-key": apiKey } });
+  if (!r.ok) {
+    const text = await r.text();
+    return res.status(502).json({ error: text || r.statusText });
+  }
+  const data = await r.json();
+  res.json({ signedUrl: data.signed_url });
+});
+
+app.listen(8787);
+```
+
+---
 
 ## Recommended integration (full flow + voice)
 
@@ -120,13 +172,23 @@ Your app navbar can link once to **`/suite/manage-forms`** (or `/manage-forms` i
 
 Use **`FormBuilderProvider`** without `routePrefix` (or `routePrefix: ""`) and mount paths such as `/manage-forms`, `/form-builder/:activityId?`, `/report-config`, `/report-preview` on **`FormBuilderLayout`**.
 
-### Public exports (high level)
+### Public exports
 
-- **Shell:** `FormBuilderLayout`, `FormBuilderProvider`, `useFormBuilderConfig`
-- **Screens:** `ManageForms`, `FormBuilder`, `ReportConfigPage`, `ReportPreviewPage`, `ReportsPage`
-- **Voice:** `VoiceAgentProvider`, `useVoiceAgentContext`, `UICallbacks` (for advanced wiring)
-- **Routes:** `buildFormBuilderRoutes`, `resolveLegacyNavigatePath`
-- **State:** `useActivityStore`, `syncReportsAuthLocalStorage`
+| Area | Exports |
+|------|---------|
+| Plug-in | `FormBuilderPlugIn`, `FormBuilderStandalone`, types `FormBuilderPlugInProps`, `FormBuilderStandaloneProps` |
+| Layout / provider | `FormBuilderLayout`, `FormBuilderProvider`, `useFormBuilderConfig`, config/route types from `./provider` |
+| Routes | `buildFormBuilderRoutes`, `resolveLegacyNavigatePath` |
+| Main screens | `FormBuilder`, `ManageForms` |
+| Reports | `ReportConfigPage`, `ReportPreviewPage`, `ReportsPage`, **`REPORTS_ACCOUNT_ID`**, **`syncReportsAuthLocalStorage`** |
+| Voice (context) | `VoiceAgentProvider`, `useVoiceAgentContext`, type `UICallbacks` |
+| Voice (Convai) | **`useConvaiAgent`**, types **`ConvaiStatus`**, **`ConvaiState`** |
+| Voice (types from agent state machine) | **`AgentStage`**, **`VoiceAgentState`**, **`VoiceAgentActions`** |
+| Optional shell | `VoiceAgentPanel`, `VoiceActionFeedProvider` |
+| Hooks / state | `useActivityStore` |
+| Types | `export type *` from `./types` |
+
+Dependencies pulled in for you: **`@aditya-sharma-salescode/shared-ui`**, **`@aditya-sharma-salescode/reports-ui`**, **`@11labs/client`** (dynamic import inside **`useConvaiAgent`**).
 
 ## Why the UI can look wrong
 
@@ -138,3 +200,22 @@ Use **`FormBuilderProvider`** without `routePrefix` (or `routePrefix: ""`) and m
 ## Minimal usage (builder only, no voice shell)
 
 If you mount only `<FormBuilder />`, you must still wrap it with **`VoiceAgentProvider`** (and usually **`FormBuilderProvider`**) so hooks do not throw. For voice UI, prefer **`FormBuilderLayout`** as above.
+
+---
+
+## Verify (monorepo)
+
+From the repo root, build the library and the **Vite** smoke app that mounts **`FormBuilderPlugIn`** at **`/form-workspace/*`**:
+
+```bash
+pnpm run verify:form-builder-vite
+```
+
+### Verify a npm tarball (e.g. before GitHub Packages publish)
+
+```bash
+cd packages/form-builder
+pnpm pack --pack-destination ../../tmp
+# In a fresh Vite app: npm install ../../tmp/aditya-sharma-salescode-form-builder-*.tgz
+# Import shared-ui CSS and extend Tailwind `content` as documented above.
+```

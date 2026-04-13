@@ -31,6 +31,9 @@ export type * from "./types";
 // ─── Voice Agent ─────────────────────────────────────────
 export { VoiceAgentProvider, useVoiceAgentContext } from "./voice/VoiceAgentContext";
 export type { UICallbacks } from "./voice/VoiceAgentContext";
+export { useConvaiAgent } from "./voice/useConvaiAgent";
+export type { ConvaiStatus, ConvaiState } from "./voice/useConvaiAgent";
+export type { AgentStage, VoiceAgentState, VoiceAgentActions } from "./voice/useVoiceAgent";
 
 // ─── Hooks ───────────────────────────────────────────────
 export { useActivityStore } from "./hooks/useActivityStore";
@@ -39,4 +42,11 @@ export { useActivityStore } from "./hooks/useActivityStore";
 export { default as ReportConfigPage } from "./reports/config/ReportConfigPage";
 export { default as ReportPreviewPage } from "./reports/preview/ReportPreviewPage";
 export { default as ReportsPage } from "./reports/portal/ReportsPage";
-export { syncReportsAuthLocalStorage } from "./reports/portal/syncReportsAuth";
+export {
+  REPORTS_ACCOUNT_ID,
+  syncReportsAuthLocalStorage,
+} from "./reports/portal/syncReportsAuth";
+
+// Optional shell pieces (e.g. embedded portals) — same stack as FormBuilderLayout.
+export { VoiceActionFeedProvider } from "./voice/VoiceActionFeedContext";
+export { VoiceAgentPanel } from "./voice/VoiceAgentPanel";

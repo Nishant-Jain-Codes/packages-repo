@@ -16,7 +16,7 @@ This repo is a **workspaces monorepo** that publishes packages to **GitHub Packa
 ```ini
 @aditya-sharma-salescode:registry=https://npm.pkg.github.com
 always-auth=true
-```
+``` 
 
 2) Authenticate (local dev):
 

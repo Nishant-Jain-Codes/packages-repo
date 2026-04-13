@@ -1,6 +1,6 @@
 {
   "name": "@aditya-sharma-salescode/shared-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
@@ -15,7 +15,9 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./dist/index.css": "./dist/index.css",
+    "./index.css": "./dist/index.css"
   },
   "scripts": {
     "build": "tsup",
