@@ -1,0 +1,1258 @@
+{
+  "view_id": "sfa_main_config",
+  "app_type": "sfa",
+  "nodes": [
+    {
+      "node_id": "feature_selection",
+      "node_label": "Features",
+      "node_logo": "",
+      "node_description": "Toggle and configure app features",
+      "node_type": "feature_selection",
+      "target_config_keys": ["app"],
+      "children": [
+        {
+          "feature_id": "recommendations",
+          "feature_label": "Recommendations",
+          "feature_description": "Product recommendations for\n  sales reps — syncs recommendation data from the backend at\n  startup"
+        },
+        {
+          "feature_id": "pjp",
+          "feature_label": "PJP (Permanent Journey Plan)",
+          "feature_description": "Outlet visit plan for sales\n  reps — syncs PJP data from the backend and stores locally for\n  offline access",
+          "feature_default": {
+            "enabled": true,
+            "strategies": {},
+            "config": {},
+            "services": {
+              "pjp_sync": {
+                "enabled": true,
+                "sync_mode": "startup",
+                "sync_ttl_hours": 24,
+                "local_cache_ttl_minutes": 30,
+                "strategies": {},
+                "extra": {}
+              }
+            }
+          }
+        },
+        {
+          "feature_id": "attendance",
+          "feature_label": "Attendance",
+          "feature_description": "Employee attendance marking\n  and monthly dashboard. Tab 1: form-driven attendance\n  submission (Working/Leave/Meeting). Tab 2: calendar view with\n  monthly stats and status counts."
+        }
+      ]
+    },
+    {
+      "node_id": "home_tasks",
+      "node_label": "Daily Task",
+      "node_logo": "",
+      "node_description": "Configure task cards for field reps — toggle on/off, reorder, and edit labels and data points",
+      "node_type": "config_editor",
+      "target_config_keys": ["app"],
+      "config": [
+        {
+          "field_id": "home_tasks",
+          "target_path": "features.home.config.tasks",
+          "label": "Task Cards",
+          "description": "Configure tasks for field reps — toggle on/off, reorder by dragging, and click the edit icon to modify labels and data points.",
+          "input_type": "list_selection",
+          "identity_key": "type",
+          "list_options": [
+            {
+              "id": "sales_target",
+              "label": "Sales Target",
+              "description": "Daily target assigned to each user to achieve through outlet visits",
+              "default_config": {
+                "type": "sales_target",
+                "enabled": true,
+                "label": "SALES TARGET",
+                "subtitle": "Must Achieve Today",
+                "metric": "SALES_AMOUNT",
+                "period": "DAILY",
+                "avg_sales_days": 7,
+                "show_incentive": false,
+                "unit": "₹",
+                "color": "#17C3B2"
+              }
+            },
+            {
+              "id": "must_order",
+              "label": "Must Order Outlets",
+              "description": "Number of outlets where order probability is too high and must be billed",
+              "default_config": {
+                "type": "must_order",
+                "enabled": true,
+                "label": "MUST ORDER",
+                "subtitle": "Must Bill Today",
+                "metric": "SALES_UNITS",
+                "period": "DAILY",
+                "avg_sales_days": 7,
+                "show_incentive": false,
+                "unit": "",
+                "color": "#e04a0b"
+              }
+            },
+            {
+              "id": "focus",
+              "label": "Focus Products",
+              "description": "Priority products that reps must push and sell across their assigned route",
+              "default_config": {
+                "type": "focus",
+                "enabled": false,
+                "label": "FOCUS PRODUCTS",
+                "subtitle": "Focus Products To Be Sold",
+                "metric": "SALES_UNITS",
+                "period": "DAILY",
+                "avg_sales_days": 7,
+                "show_incentive": false,
+                "unit": "",
+                "color": "#E86F2C"
+              }
+            }
+          ],
+          "item_fields": [
+            
+            {
+              "field_id": "task_label",
+              "target_path": "features.home.config.tasks.*.label",
+              "label": "Card Title",
+              "description": "Title text on the task card.",
+              "input_type": "text"
+            },
+            {
+              "field_id": "task_subtitle",
+              "target_path": "features.home.config.tasks.*.subtitle",
+              "label": "Card Subtitle",
+              "description": "Subtitle text on the task card.",
+              "input_type": "text"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "node_id": "kpi_config",
+      "node_label": "KPIs",
+      "node_logo": "",
+      "node_description": "Select and configure KPI scorecards — toggle on/off, reorder, edit labels and data points",
+      "node_type": "config_editor",
+      "target_config_keys": ["app"],
+      "config": [
+        {
+          "field_id": "kpi_list",
+          "target_path": "features.kpi.config.kpi_config_list",
+          "label": "KPI Scorecards",
+          "description": "Select and configure KPI scorecards — toggle on/off, reorder by dragging, and click the edit icon to modify labels and data points.",
+          "input_type": "list_selection",
+          "identity_key": "id",
+          "list_options": [
+            {
+              "id": "salesValue",
+              "label": "Sales Value",
+              "description": "Track monthly and quarterly sales achievement against targets",
+              "default_config": {
+                "id": "salesValue",
+                "type": "Tile",
+                "label": "Sales Value",
+                "sources": {
+                  "uta": "user_target_achievement",
+                  "uta_out": "user_target_achievement_outlets",
+                  "uta_qtr": "user_target_achievement_quarter"
+                },
+                "validationTemplates": {
+                  "achColor": {
+                    "datapoints": [],
+                    "rules": [
+                      {
+                        "condition": {
+                          "operator": ">",
+                          "operands": [
+                            "self",
+                            "80"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#4CAF50"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "happy"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": ">=",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#FFC107"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "neutral"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": "<",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#F44336"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "sad"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "trigger": "onTap",
+                    "params": {
+                      "to": "/kpi/detail"
+                    }
+                  }
+                ],
+                "datapoints": {
+                  "main": [
+                    {
+                      "id": "achPer",
+                      "type": "percentage",
+                      "unit": "%",
+                      "label": "",
+                      "source": "kpi",
+                      "validation": "achColor",
+                      "formula": "$uta::revenueAchievedPct"
+                    }
+                  ],
+                  "footer": [
+                    {
+                      "id": "mtdAch",
+                      "type": "number",
+                      "unit": "",
+                      "label": "MTD ACH",
+                      "source": "kpi",
+                      "formula": "$uta::revenueAchieved"
+                    },
+                    {
+                      "id": "mtdTgt",
+                      "type": "number",
+                      "unit": "",
+                      "label": "MTD TGT",
+                      "source": "kpi",
+                      "formula": "$uta::revenueTarget"
+                    },
+                    {
+                      "id": "qtrAch",
+                      "type": "number",
+                      "unit": "",
+                      "label": "QTR ACH",
+                      "source": "kpi",
+                      "formula": "$uta_qtr::revenueAchieved"
+                    },
+                    {
+                      "id": "qtrTgt",
+                      "type": "number",
+                      "unit": "",
+                      "label": "QTR TGT",
+                      "source": "kpi",
+                      "formula": "$uta_qtr::revenueTarget"
+                    }
+                  ]
+                },
+                "children": [
+                  {
+                    "id": "kpi_tab",
+                    "type": "Tab",
+                    "tabImage": "jnj_sales_icon.svg",
+                    "style": {
+                      "actionTabColor": "#00a392"
+                    },
+                    "children": [
+                      {
+                        "id": "toggle_list",
+                        "type": "ToggleList",
+                        "children": [
+                          {
+                            "id": "toggle1_toggle_sales",
+                            "type": "Toggle",
+                            "label": "Option 1",
+                            "children": [
+                              {
+                                "id": "sales_value_sm_card",
+                                "type": "SummaryCard",
+                                "label": "Sales Value Update",
+                                "datapoints": {
+                                  "main": [
+                                    {
+                                      "id": "achPer",
+                                      "type": "percentage",
+                                      "unit": "%",
+                                      "label": "MTD ACH%",
+                                      "source": "kpi",
+                                      "formula": "$uta::revenueAchievedPct"
+                                    }
+                                  ],
+                                  "footer": [
+                                    {
+                                      "id": "totalOutlets",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Total no. of Outlets",
+                                      "source": "kpi",
+                                      "formula": "$uta::totalOutlets"
+                                    },
+                                    {
+                                      "id": "outletsWith100Per",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Outlets with 100% MTD TGT ACH",
+                                      "source": "kpi",
+                                      "formula": "$uta::outlets100Pct"
+                                    },
+                                    {
+                                      "id": "outletsWithNoOrder",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Outlets with no order MTD",
+                                      "source": "kpi",
+                                      "formula": "$uta::outletsNoOrder"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "id": "sales_value_table",
+                                "type": "Table",
+                                "label": "Table",
+                                "columns": [
+                                  {
+                                    "id": "outletName",
+                                    "type": "string",
+                                    "label": "OUTLET NAME",
+                                    "source": "kpi",
+                                    "formula": "$uta_out::outletName-$uta_out::outletCode"
+                                  },
+                                  {
+                                    "id": "mtdAch",
+                                    "type": "number",
+                                    "label": "MTD ACH",
+                                    "source": "kpi",
+                                    "formula": "$uta_out::saleAchieved"
+                                  },
+                                  {
+                                    "id": "mtdTgt",
+                                    "type": "number",
+                                    "label": "MTD TGT",
+                                    "source": "kpi",
+                                    "formula": "$uta_out::target"
+                                  },
+                                  {
+                                    "id": "mtdAchPer",
+                                    "type": "percentage",
+                                    "label": "ACH%",
+                                    "unit": "%",
+                                    "source": "kpi",
+                                    "formula": "$uta_out::saleAchievedPct"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "productiveCall",
+              "label": "Productive Call",
+              "description": "Measure field visit productivity and PJP compliance",
+              "default_config": {
+                "id": "productiveCall",
+                "type": "Tile",
+                "label": "Productive Call",
+                "sources": {
+                  "kpi_sum": "salesrep_kpi_summary",
+                  "ol": "oultet_latest_events"
+                },
+                "validationTemplates": {
+                  "achColor": {
+                    "datapoints": [],
+                    "rules": [
+                      {
+                        "condition": {
+                          "operator": ">",
+                          "operands": [
+                            "self",
+                            "80"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#4CAF50"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "happy"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": ">=",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#FFC107"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "neutral"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": "<",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#F44336"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "sad"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "trigger": "onTap",
+                    "params": {
+                      "to": "/kpi/detail"
+                    }
+                  }
+                ],
+                "datapoints": {
+                  "main": [
+                    {
+                      "id": "productivePer",
+                      "type": "percentage",
+                      "unit": "%",
+                      "label": "",
+                      "source": "kpi",
+                      "validation": "achColor",
+                      "formula": "$kpi_sum::totalProductiveVisit / $kpi_sum::pjpVisits * 100"
+                    }
+                  ],
+                  "footer": [
+                    {
+                      "id": "plannedCalls",
+                      "type": "number",
+                      "unit": "",
+                      "label": "Planned Calls",
+                      "source": "kpi",
+                      "formula": "$kpi_sum::plannedOutlets"
+                    },
+                    {
+                      "id": "completedCalls",
+                      "type": "number",
+                      "unit": "",
+                      "label": "Completed Calls",
+                      "source": "kpi",
+                      "formula": "$kpi_sum::pjpVisits"
+                    },
+                    {
+                      "id": "productiveCalls",
+                      "type": "number",
+                      "unit": "",
+                      "label": "Productive Calls",
+                      "source": "kpi",
+                      "formula": "$kpi_sum::totalProductiveVisit"
+                    },
+                    {
+                      "id": "pjpCompliance",
+                      "type": "percentage",
+                      "unit": "%",
+                      "label": "PJP Compliance %",
+                      "source": "kpi",
+                      "formula": "$kpi_sum::pjpVisits / $kpi_sum::plannedOutlets * 100"
+                    }
+                  ]
+                },
+                "children": [
+                  {
+                    "id": "productive_call_tab",
+                    "type": "Tab",
+                    "tabImage": "jnj_sales_icon.svg",
+                    "style": {
+                      "actionTabColor": "#51D7C1"
+                    },
+                    "children": [
+                      {
+                        "id": "productive_call_toggle_list",
+                        "type": "ToggleList",
+                        "children": [
+                          {
+                            "id": "toggle1_productive_call",
+                            "type": "Toggle",
+                            "label": "Option 1",
+                            "children": [
+                              {
+                                "id": "productive_call_sm_card",
+                                "type": "SummaryCard",
+                                "label": "Productive Call Update",
+                                "datapoints": {
+                                  "main": [
+                                    {
+                                      "id": "productivePer",
+                                      "type": "percentage",
+                                      "unit": "%",
+                                      "label": "Productive %",
+                                      "source": "kpi",
+                                      "formula": "$kpi_sum::totalProductiveVisit / $kpi_sum::pjpVisits * 100"
+                                    }
+                                  ],
+                                  "footer": [
+                                    {
+                                      "id": "plannedCalls",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Planned Calls",
+                                      "source": "kpi",
+                                      "formula": "$kpi_sum::plannedOutlets"
+                                    },
+                                    {
+                                      "id": "completedCalls",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Completed Calls",
+                                      "source": "kpi",
+                                      "formula": "$kpi_sum::pjpVisits"
+                                    },
+                                    {
+                                      "id": "productiveCalls",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Productive Calls",
+                                      "source": "kpi",
+                                      "formula": "$kpi_sum::totalProductiveVisit"
+                                    },
+                                    {
+                                      "id": "pjpCompliance",
+                                      "type": "percentage",
+                                      "unit": "%",
+                                      "label": "PJP Compliance %",
+                                      "source": "kpi",
+                                      "formula": "$kpi_sum::pjpVisits / $kpi_sum::plannedOutlets * 100"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "id": "productive_call_table",
+                                "type": "Table",
+                                "label": "Table",
+                                "columns": [
+                                  {
+                                    "id": "outletNameCode",
+                                    "type": "string",
+                                    "label": "OUTLET NAME & CODE",
+                                    "source": "kpi",
+                                    "formula": "$ol::outletName-$ol::outletCode"
+                                  },
+                                  {
+                                    "id": "lastBilledOn",
+                                    "type": "string",
+                                    "label": "LAST BILLED ON",
+                                    "source": "kpi",
+                                    "formula": "$ol::lastBilledOn"
+                                  },
+                                  {
+                                    "id": "lastVisitedOn",
+                                    "type": "string",
+                                    "label": "LAST VISITED ON",
+                                    "source": "kpi",
+                                    "formula": "$ol::lastVisitedOn"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "focusSku",
+              "label": "Focus Products",
+              "description": "Track focus product distribution and sales targets",
+              "default_config": {
+                "id": "focusSku",
+                "type": "Tile",
+                "label": "Focus SKU",
+                "sources": {
+                  "msl": "kpi_msl_user",
+                  "msl_out": "kpi_msl_outlet_list"
+                },
+                "validationTemplates": {
+                  "achColor": {
+                    "datapoints": [],
+                    "rules": [
+                      {
+                        "condition": {
+                          "operator": ">",
+                          "operands": [
+                            "self",
+                            "80"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#4CAF50"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "happy"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": ">=",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#FFC107"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "neutral"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": "<",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#F44336"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "sad"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "trigger": "onTap",
+                    "params": {
+                      "to": "/kpi/detail"
+                    }
+                  }
+                ],
+                "datapoints": {
+                  "main": [
+                    {
+                      "id": "mslAchPct",
+                      "type": "percentage",
+                      "unit": "%",
+                      "label": "",
+                      "source": "kpi",
+                      "validation": "achColor",
+                      "formula": "$msl::totalAch"
+                    }
+                  ],
+                  "footer": [
+                    {
+                      "id": "mslAch",
+                      "type": "number",
+                      "unit": "",
+                      "label": "MSL ACH",
+                      "source": "kpi",
+                      "formula": "$msl::achieved"
+                    },
+                    {
+                      "id": "mslTgt",
+                      "type": "number",
+                      "unit": "",
+                      "label": "MSL TGT",
+                      "source": "kpi",
+                      "formula": "$msl::target"
+                    }
+                  ]
+                },
+                "children": [
+                  {
+                    "id": "focus_sku_tab",
+                    "type": "Tab",
+                    "tabImage": "jnj_sales_icon.svg",
+                    "style": {
+                      "actionTabColor": "#7B61FF"
+                    },
+                    "children": [
+                      {
+                        "id": "focus_sku_toggle_from_data",
+                        "type": "ToggleFromData",
+                        "meta": [
+                          {
+                            "id": "source",
+                            "value": "kpi_msl_user::value"
+                          }
+                        ],
+                        "children": [
+                          {
+                            "id": "focus_sku_toggle_template",
+                            "type": "Toggle",
+                            "children": [
+                              {
+                                "id": "focus_sku_sm_card",
+                                "type": "SummaryCard",
+                                "label": "MSL Summary",
+                                "meta": [
+                                  {
+                                    "id": "filter",
+                                    "value": {
+                                      "kpi_msl_user": "value"
+                                    }
+                                  }
+                                ],
+                                "datapoints": {
+                                  "main": [
+                                    {
+                                      "id": "totalAch",
+                                      "type": "percentage",
+                                      "unit": "%",
+                                      "label": "ACH %",
+                                      "source": "kpi",
+                                      "formula": "$msl::totalAch"
+                                    }
+                                  ],
+                                  "footer": [
+                                    {
+                                      "id": "mslAchieved",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Achieved",
+                                      "source": "kpi",
+                                      "formula": "$msl::achieved"
+                                    },
+                                    {
+                                      "id": "mslTarget",
+                                      "type": "number",
+                                      "unit": "",
+                                      "label": "Target",
+                                      "source": "kpi",
+                                      "formula": "$msl::target"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "id": "focus_sku_table",
+                                "type": "Table",
+                                "label": "Outlet Breakdown",
+                                "meta": [
+                                  {
+                                    "id": "filter",
+                                    "value": {
+                                      "kpi_msl_outlet_list": "curChannel"
+                                    }
+                                  }
+                                ],
+                                "columns": [
+                                  {
+                                    "id": "outletName",
+                                    "type": "string",
+                                    "label": "OUTLET NAME",
+                                    "source": "kpi",
+                                    "formula": "$msl_out::outletName"
+                                  },
+                                  {
+                                    "id": "curChannel",
+                                    "type": "string",
+                                    "label": "CHANNEL",
+                                    "source": "kpi",
+                                    "formula": "$msl_out::curChannel"
+                                  },
+                                  {
+                                    "id": "mslAch",
+                                    "type": "number",
+                                    "label": "MSL ACH",
+                                    "source": "kpi",
+                                    "formula": "$msl_out::achieved"
+                                  },
+                                  {
+                                    "id": "mslTgt",
+                                    "type": "number",
+                                    "label": "MSL TGT",
+                                    "source": "kpi",
+                                    "formula": "$msl_out::target"
+                                  },
+                                  {
+                                    "id": "mslAchPct",
+                                    "type": "percentage",
+                                    "label": "ACH %",
+                                    "unit": "%",
+                                    "source": "kpi",
+                                    "formula": "$msl_out::achievedPct"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "tlsr",
+              "label": "TLSR",
+              "description": "Total line selling rate across outlet visits",
+              "default_config": {
+                "id": "tlsr",
+                "type": "Tile",
+                "label": "TLSR",
+                "sources": {
+                  "tlsr": "salesrep_tlsr_kpi"
+                },
+                "validationTemplates": {
+                  "achColor": {
+                    "datapoints": [],
+                    "rules": [
+                      {
+                        "condition": {
+                          "operator": ">",
+                          "operands": [
+                            "self",
+                            "80"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#4CAF50"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "happy"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": ">=",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#FFC107"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "neutral"
+                          }
+                        ]
+                      },
+                      {
+                        "condition": {
+                          "operator": "<",
+                          "operands": [
+                            "self",
+                            "60"
+                          ]
+                        },
+                        "results": [
+                          {
+                            "type": "color",
+                            "value": "#F44336"
+                          },
+                          {
+                            "type": "emoji",
+                            "value": "sad"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "datapoints": {
+                  "main": [
+                    {
+                      "id": "achPer",
+                      "type": "percentage",
+                      "unit": "%",
+                      "label": "",
+                      "source": "kpi",
+                      "validation": "achColor",
+                      "formula": "$tlsr::achievedPct"
+                    }
+                  ],
+                  "footer": [
+                    {
+                      "id": "mtdAch",
+                      "type": "number",
+                      "unit": "",
+                      "label": "MTD ACH",
+                      "source": "kpi",
+                      "formula": "$tlsr::tlsr"
+                    },
+                    {
+                      "id": "mtdTgt",
+                      "type": "number",
+                      "unit": "",
+                      "label": "MTD TGT",
+                      "source": "kpi",
+                      "formula": "$tlsr::target"
+                    },
+                    {
+                      "id": "btg",
+                      "type": "number",
+                      "unit": "",
+                      "label": "BTG",
+                      "source": "kpi",
+                      "formula": "$tlsr::balanceToGo"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "node_id": "store_activity",
+      "node_label": "Store Activity",
+      "node_logo": "",
+      "node_description": "Select store-level activities and configure the data capture form for each. Use advanced settings to customize fields.",
+      "node_type": "store_activity",
+      "target_config_keys": ["app"],
+      "children": [
+        {
+          "activity_id": "merchandising",
+          "activity_label": "Merchandising",
+          "activity_description": "Capture shelf displays, planogram compliance, and product visibility at outlets",
+          "activity_default": {
+            "enabled": true,
+            "config": {
+              "schema": {
+                "formName": "Merchandising",
+                "sections": [
+                  {
+                    "id": "6fb4ab91-83d4-487f-8ff5-b95a5c5d0b82",
+                    "title": "Store Details",
+                    "fields": [
+                      {
+                        "id": "3b2ba9e7-1ef7-463b-8f13-60415e7b7298",
+                        "type": "dropdown",
+                        "label": "Select Merchandising Task",
+                        "required": false,
+                        "columnName": "type",
+                        "options": [
+                          "JAR MANAGEMENT",
+                          "HANGING MANAGEMENT",
+                          "SHELF MANAGEMENT"
+                        ]
+                      },
+                      {
+                        "id": "c4ad0c81-3b50-492c-91ea-abacf0a68d71",
+                        "type": "camera",
+                        "label": "Upload Image",
+                        "required": false,
+                        "columnName": "blobKey",
+                        "allowCamera": true,
+                        "allowGallery": true
+                      },
+                      {
+                        "id": "merch-remarks",
+                        "type": "textarea",
+                        "label": "Remarks",
+                        "required": false,
+                        "columnName": "remarks",
+                        "placeholder": "Enter remarks..."
+                      }
+                    ]
+                  }
+                ],
+                "meta": {
+                  "submitLabel": "Submit",
+                  "submitEndpoint": "/outlet-activities"
+                }
+              }
+            }
+          },
+          "tab_default": {
+            "id": "merchandising",
+            "label": "ASSET TRACKING",
+            "iconPath": "assets/svg/competition_tracking.svg",
+            "isDefault": false,
+            "themeColor": "#2bbbad",
+            "storeInRequired": ""
+          }
+        },
+        {
+          "activity_id": "competition_tracking",
+          "activity_label": "Competition Activity",
+          "activity_description": "Track competitor product presence, pricing, and promotions at retail outlets",
+          "activity_default": {
+            "enabled": true,
+            "config": {
+              "schema": {
+                "formName": "Competition Tracking",
+                "sections": [
+                  {
+                    "id": "6c12416b-86d9-4532-a85b-a698290be1a6",
+                    "title": "Details",
+                    "fields": [
+                      {
+                        "id": "6c5d103c-ed33-4cff-b959-566671e6ad0b",
+                        "type": "dropdown",
+                        "label": "Select Activity",
+                        "required": false,
+                        "columnName": "activity",
+                        "options": [
+                          "Promos & Offer",
+                          "New product launch",
+                          "New branding visibility"
+                        ]
+                      },
+                      {
+                        "id": "0a9f072b-1715-4a28-a7e4-336528838ada",
+                        "type": "dropdown",
+                        "label": "Select Competitor",
+                        "required": true,
+                        "columnName": "competitor",
+                        "options": [
+                          "Mondelez International",
+                          "Hershey",
+                          "Mars Wrigley Confectionery"
+                        ]
+                      },
+                      {
+                        "id": "2defde4c-a891-49b5-8f16-3bc178142398",
+                        "type": "dateRange",
+                        "label": "Activity Duration",
+                        "required": true,
+                        "columnName": "date_range",
+                        "showDifference": true
+                      },
+                      {
+                        "id": "62a30571-402b-47cf-92ab-7d43fcaba179",
+                        "type": "camera",
+                        "label": "Upload Image",
+                        "required": false,
+                        "columnName": "blobKey",
+                        "allowGallery": true,
+                        "allowCamera": true
+                      },
+                      {
+                        "id": "809e6b7e-28a5-4f68-816f-c2c52ebb644b",
+                        "type": "camera",
+                        "label": "Additional Image",
+                        "required": true,
+                        "columnName": "blobKey1",
+                        "allowCamera": true,
+                        "allowGallery": true
+                      },
+                      {
+                        "id": "b6984a34-af24-4c89-9d7e-329d5fdd7b4c",
+                        "type": "textarea",
+                        "label": "Remarks",
+                        "required": true,
+                        "columnName": "remarks",
+                        "placeholder": "Enter remarks..."
+                      }
+                    ]
+                  }
+                ],
+                "meta": {
+                  "submitLabel": "Submit",
+                  "submitEndpoint": "/outlet-activities"
+                }
+              }
+            }
+          },
+          "tab_default": {
+            "id": "competition_tracking",
+            "label": "COMPETITION TRACKING",
+            "iconPath": "assets/svg/competition_tracking.svg",
+            "isDefault": false,
+            "themeColor": "#e1ad01",
+            "storeInRequired": ""
+          }
+        }
+      ]
+    },
+    {
+      "node_id": "reports",
+      "node_label": "Reports",
+      "node_logo": "",
+      "node_description": "Select reports to include in your app. Click on a report to configure its filters.",
+      "node_type": "feature_selection",
+      "target_config_keys": ["app"],
+      "children": []
+    },
+     {
+      "node_id": "brand_settings",
+      "node_label": "Brand & Theming",
+      "node_logo": "",
+      "node_description": "Visual branding overrides — colors, logos, fonts",
+      "node_type": "config_editor",
+      "target_config_keys": ["app"],
+      "config": [
+        {
+          "field_id": "primary_color",
+          "target_path": "brand.primary_color",
+          "label": "Primary Color",
+          "description": "Main brand colour — app bar, buttons, accents",
+          "input_type": "color_picker"
+        },
+        {
+          "field_id": "primary_dark_color",
+          "target_path": "brand.primary_dark_color",
+          "label": "Primary Dark Color",
+          "description": "Darker shade — status bar and dark variants",
+          "input_type": "color_picker"
+        },
+        {
+          "field_id": "accent_color",
+          "target_path": "brand.accent_color",
+          "label": "Accent Color",
+          "description": "Secondary colour — FABs, selection controls, highlights",
+          "input_type": "color_picker"
+        },
+        {
+          "field_id": "logo_blob_key",
+          "target_path": "brand.logo_blob_key",
+          "label": "Company Logo",
+          "description": "PNG, SVG, JPG up to 5MB",
+          "input_type": "image_upload",
+          "validation": {
+            "max_size_mb": 5,
+            "accepted_types": [
+              "png",
+              "svg",
+              "jpg"
+            ]
+          }
+        },
+        {
+          "field_id": "banner_blob_key",
+          "target_path": "brand.banner_blob_key",
+          "label": "Login Banner",
+          "description": "Hero banner on the login screen — PNG, SVG, JPG up to 5MB",
+          "input_type": "image_upload",
+          "validation": {
+            "max_size_mb": 5,
+            "accepted_types": [
+              "png",
+              "svg",
+              "jpg"
+            ]
+          }
+        },
+        {
+          "field_id": "banner_asset_path",
+          "target_path": "brand.banner_asset_path",
+          "label": "Banner Asset Path",
+          "description": "Local asset fallback for login banner (e.g. assets/images/banner.png)",
+          "input_type": "text"
+        },
+        {
+          "field_id": "font_family",
+          "target_path": "brand.font_family",
+          "label": "Font Family",
+          "description": "Custom font family name — null uses system default",
+          "input_type": "text"
+        },
+        {
+          "field_id": "blob_base_url",
+          "target_path": "brand.blob_base_url",
+          "label": "Blob Base URL",
+          "description": "Base URL for resolving blob keys to image URLs",
+          "input_type": "text"
+        },
+        {
+          "field_id": "terms_and_conditions_url",
+          "target_path": "brand.terms_and_conditions_url",
+          "label": "Terms & Conditions URL",
+          "description": "Full URL to T&C document (PDF or image)",
+          "input_type": "text"
+        },
+        {
+          "field_id": "privacy_policy_url",
+          "target_path": "brand.privacy_policy_url",
+          "label": "Privacy Policy URL",
+          "description": "Full URL to Privacy Policy document (PDF or image)",
+          "input_type": "text"
+        }
+      ]
+    }
+  ]
+}

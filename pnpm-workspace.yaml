@@ -1,3 +1,4 @@
 packages:
   - "packages/*"
+  - "view-renderer-verify-vite"
 
