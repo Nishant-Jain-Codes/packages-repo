@@ -226,10 +226,126 @@ Use **`FormBuilderProvider`** without `routePrefix` (or `routePrefix: ""`) and m
 | Voice (Convai) | **`useConvaiAgent`**, types **`ConvaiStatus`**, **`ConvaiState`** |
 | Voice (types from agent state machine) | **`AgentStage`**, **`VoiceAgentState`**, **`VoiceAgentActions`** |
 | Optional shell | `VoiceAgentPanel`, `VoiceActionFeedProvider` |
-| Hooks / state | `useActivityStore` |
+| Hooks / state | `useActivityStore`, `useManageFormsStore` |
+| Config bridge types | `PortalConfig`, `ActivityReport`, `buildPortalConfig`, `makeActivityReport` |
 | Types | `export type *` from `./types` |
 
 Dependencies pulled in for you: **`@aditya-sharma-salescode/shared-ui`**, **`@aditya-sharma-salescode/reports-ui`**, **`@11labs/client`** (dynamic import inside **`useConvaiAgent`**).
+
+---
+
+## Portal config integration (`initialConfig` / `onConfigUpdate`)
+
+`ManageForms` can read and write the **full tenant JSON** instead of relying solely on localStorage. Pass `initialConfig` (your existing app JSON) and `onConfigUpdate` (your persistence callback) on `FormBuilderProvider`.
+
+### JSON shape managed by this integration
+
+```jsonc
+{
+  "app": { "tenant_id": "...", "tenant_name": "..." },
+  "features": {
+    "app": {
+      "enabled": true,
+      "config": {
+        // All activity forms — both enabled AND disabled.
+        // Toggle sets the `enabled` flag; schemas are never deleted.
+        "schema": [
+          {
+            "id": "abc-123",
+            "name": "Attendance",
+            "description": "Daily attendance form",
+            "enabled": true,
+            "schema": { "formName": "Attendance", "sections": [ /* … */ ] }
+          }
+        ]
+      }
+    },
+    "reports": {
+      "enabled": true,
+      "config": {
+        // Auto-generated report entry for every *enabled* activity.
+        // External reports (from reports-setup ManageReports) are preserved.
+        "report_list": [
+          {
+            "id": "abc-123_report",
+            "name": "Attendance Report",
+            "type": "Activity Reports",
+            "reportName": "attendance_report",
+            "dateRangeFilter": true
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+### Toggle behaviour
+
+| Action | `features.app.config.schema` | `features.reports.config.report_list` |
+|--------|------------------------------|---------------------------------------|
+| Toggle **ON** | `enabled: true` (schema kept) | Auto-generated `{id}_report` entry **added** |
+| Toggle **OFF** | `enabled: false` (schema kept) | `{id}_report` entry **removed** |
+| **Add** activity | New entry (`enabled: true`) | Report entry added |
+| **Delete** activity | Entry removed | Report entry removed |
+
+### Usage
+
+```tsx
+import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import {
+  FormBuilderProvider,
+  FormBuilderLayout,
+  ManageForms,
+  FormBuilder,
+} from "@aditya-sharma-salescode/form-builder";
+import type { PortalConfig } from "@aditya-sharma-salescode/form-builder";
+
+const STORAGE_KEY = "portalConfig";
+
+function loadConfig(): PortalConfig {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function App() {
+  const [portalConfig, setPortalConfig] = useState<PortalConfig>(loadConfig);
+
+  const handleConfigUpdate = (updated: PortalConfig) => {
+    setPortalConfig(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    // or: api.saveConfig(tenantId, updated);
+  };
+
+  return (
+    <FormBuilderProvider
+      config={{
+        routePrefix: "/suite",
+        initialConfig: portalConfig,
+        onConfigUpdate: handleConfigUpdate,
+      }}
+    >
+      <Routes>
+        <Route path="/suite" element={<FormBuilderLayout />}>
+          <Route path="manage-forms" element={<ManageForms />} />
+          <Route path="form-builder/:activityId?" element={<FormBuilder />} />
+        </Route>
+      </Routes>
+    </FormBuilderProvider>
+  );
+}
+```
+
+### Without `initialConfig` (localStorage-only mode)
+
+Omitting `initialConfig` keeps the original behaviour — activities are stored in `localStorage["formActivities"]` and `onConfigUpdate` is never called. Both modes are fully supported.
+
+---
 
 ## Why the UI can look wrong
 
