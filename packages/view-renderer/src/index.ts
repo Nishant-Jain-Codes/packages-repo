@@ -48,6 +48,7 @@ export type {
   GlobalConfigMap,
   DraftMap,
   EndpointsConfigMap,
+  PreviewConfig,
   CreateViewMetaProps,
   FeatureSelectionState,
 } from './types'

@@ -31,7 +31,7 @@ export function ReportsNodeRenderer() {
         onEditReport: handleEditReport,
       }}
     >
-      <ManageReports />
+      <ManageReports minimal />
     </ReportsProvider>
   )
 }

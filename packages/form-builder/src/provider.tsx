@@ -15,6 +15,12 @@ export interface FormBuilderFeatures {
   jsonImport?: boolean;
   /** Show JSON export/download buttons in Form Builder header. Default: true */
   jsonExport?: boolean;
+  /** Show dark/light mode toggle button. Default: true */
+  darkModeToggle?: boolean;
+  /** Show Save button. Default: true */
+  saveButton?: boolean;
+  /** Show AI prompt bar (Jira fetch UI on small screens). Default: true */
+  aiPromptBar?: boolean;
 }
 
 export interface FormBuilderServiceOverrides {
@@ -83,6 +89,9 @@ const defaultContextValue: FormBuilderContextValue = {
     jsonViewer: true,
     jsonImport: true,
     jsonExport: true,
+    darkModeToggle: true,
+    saveButton: true,
+    aiPromptBar: true,
   },
   endpoints: {},
   services: {},

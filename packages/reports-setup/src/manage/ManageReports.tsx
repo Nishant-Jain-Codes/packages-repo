@@ -40,12 +40,18 @@ interface ManageReportsProps {
    * Receives the report ID → consumer navigates to the config editor.
    */
   onEditReport?: (reportId: string) => void;
+  /**
+   * When true, hides header, search bar, and bottom navigation.
+   * Use when embedding ManageReports inside another layout.
+   */
+  minimal?: boolean;
 }
 
 export function ManageReports({
   onBack,
   onContinue,
   onEditReport: onEditReportProp,
+  minimal = false,
 }: ManageReportsProps) {
   const { initialConfig, onConfigUpdate, onEditReport: onEditReportCtx } =
     useReportsConfig();
@@ -93,8 +99,9 @@ export function ManageReports({
     .filter((r) => isEnabled(r.id)).length;
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className={`flex flex-col bg-background ${minimal ? 'h-full' : 'h-screen'}`}>
       {/* ── Header ──────────────────────────────────────────────────────── */}
+      {!minimal && (
       <div className="border-b bg-card/80 backdrop-blur-sm px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -130,12 +137,14 @@ export function ManageReports({
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto px-6 py-5 space-y-8">
 
           {/* Search */}
+          {!minimal && (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -145,6 +154,7 @@ export function ManageReports({
               className="pl-9 h-10"
             />
           </div>
+          )}
 
           {/* Sections */}
           {Object.keys(filteredGrouped).length === 0 ? (
@@ -159,12 +169,15 @@ export function ManageReports({
             Object.entries(filteredGrouped).map(([section, reports]) => (
               <div key={section || "__uncategorised__"}>
                 {/* Section header */}
-                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3">
-                  {section || "Reports"}
-                </p>
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-xs font-semibold tracking-widest uppercase text-emerald-700/70">
+                    {section || "Reports"}
+                  </p>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
 
                 {/* Two-column grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {reports.map((report) => (
                     <ReportListCard
                       key={report.id}
@@ -182,6 +195,7 @@ export function ManageReports({
       </div>
 
       {/* ── Bottom navigation ────────────────────────────────────────────── */}
+      {!minimal && (
       <div className="border-t bg-card/80 backdrop-blur-sm px-6 py-3 shrink-0">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Button
@@ -203,6 +217,7 @@ export function ManageReports({
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }

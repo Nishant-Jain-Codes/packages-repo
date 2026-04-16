@@ -18,6 +18,17 @@ export interface ViewMeta {
   nodes: NodeMeta[]
 }
 
+// ── Preview config (per-node) ──
+
+export interface PreviewConfig {
+  type: 'pwa' | 'desktop' | 'web'
+  url?: string
+  route?: string
+  width?: number
+  height?: number
+  label?: string
+}
+
 // ── Base node shape ──
 
 export interface NodeMetaBase {
@@ -28,6 +39,7 @@ export interface NodeMetaBase {
   node_logo: string
   target_config_keys?: AppTypeKey[]
   data?: Record<string, unknown>
+  preview?: PreviewConfig
 }
 
 // ── feature_selection node ──

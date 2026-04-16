@@ -1,10 +1,27 @@
-import { useState, useEffect, useCallback, useMemo, type CSSProperties } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties } from "react";
+
+/** Hook: measure an element's size via ResizeObserver */
+function useElementSize<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setSize({ width, height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return { ref, size };
+}
 import { JsonTab } from "./components/JsonTab";
 import { DiffTab } from "./components/DiffTab";
 import { SaveOutputTab } from "./components/SaveOutputTab";
-import { TopToggleList, MiddleContent, BottomActionBar, ViewRendererProvider, CreateViewMeta } from "view-renderer";
+import { TopToggleList, MiddleContent, BottomActionBar, ViewRendererProvider, CreateViewMeta, PhoneMockup, AppPwaPreview } from "view-renderer";
 import { fetchTenantConfig, fetchGlobalConfigs } from "view-renderer";
-import type { ViewMeta, TenantConfig, GlobalFeatureConfig, DraftMap, TenantConfigMap, GlobalConfigMap, AppTypeKey } from "view-renderer";
+import type { ViewMeta, TenantConfig, GlobalFeatureConfig, DraftMap, TenantConfigMap, GlobalConfigMap, AppTypeKey, AppPwaPreviewHandle, PwaStatus } from "view-renderer";
 
 type TabKey = "viewMeta" | "tenantConfig" | "globalSchema" | "draftState" | "saveOutput" | "createView";
 
@@ -163,17 +180,72 @@ const S = {
     display: "flex",
     flexDirection: "column",
     minHeight: 0,
-    overflow: "auto",
+    overflow: "hidden",
     background: "#fff",
   } as CSSProperties,
   rightContent: {
     display: "flex",
-    flexDirection: "column",
-    minHeight: "100%",
-    maxWidth: 900,
-    margin: "0 auto",
+    flex: 1,
+    minHeight: 0,
     width: "100%",
+    gap: 16,
+    overflow: "hidden",
+  } as CSSProperties,
+  rightContentLeft: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
     padding: "0 16px",
+    overflow: "auto",
+  } as CSSProperties,
+  rightContentRight: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    flexShrink: 0,
+    padding: "16px 16px 16px 0",
+    gap: 12,
+    overflow: "hidden",
+  } as CSSProperties,
+  previewBtn: (status: string): CSSProperties => ({
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: "8px 32px",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#fff",
+    background: status === "applying" ? "#6b7280" : "#0d9488",
+    border: "none",
+    borderRadius: 8,
+    cursor: status === "loading" || status === "applying" ? "not-allowed" : "pointer",
+    opacity: status === "loading" ? 0.5 : 1,
+    transition: "all 0.15s ease",
+    minWidth: 120,
+  }),
+  spinner: {
+    display: "inline-block",
+    width: 14,
+    height: 14,
+    border: "2px solid rgba(255,255,255,0.3)",
+    borderTopColor: "#fff",
+    borderRadius: "50%",
+    animation: "spin 0.6s linear infinite",
+  } as CSSProperties,
+  previewErrorBanner: {
+    background: "#fef2f2",
+    border: "1px solid #fecaca",
+    color: "#dc2626",
+    fontSize: 12,
+    padding: "6px 12px",
+    borderRadius: 6,
+    display: "flex",
+    alignItems: "center",
+    maxWidth: "100%",
+    textAlign: "center",
   } as CSSProperties,
   placeholder: {
     display: "flex",
@@ -291,9 +363,31 @@ export default function TestHarness() {
   // Draft observation from provider (for debug panel)
   const [draftForDebug, setDraftForDebug] = useState<DraftMap | null>(null);
 
+  // PWA Preview settings (passed to ViewRendererProvider)
+  const [pwaUrl, setPwaUrl] = useState("http://localhost:8080");
+  const [pwaToken, setPwaToken] = useState("");
+  const [livePreview, setLivePreview] = useState(false);
+  const previewRef = useRef<AppPwaPreviewHandle>(null);
+  const [previewStatus, setPreviewStatus] = useState<PwaStatus>('loading');
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
   // Save status from provider callbacks
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+
+  // Dynamic phone sizing — measure the right-side container and fit the phone
+  const { ref: phoneContainerRef, size: phoneContainerSize } = useElementSize<HTMLDivElement>();
+  const PHONE_ASPECT = 375 / 720; // width / height (screen only)
+  const BEZEL_EXTRA_H = 12 * 2 + 24 + 4 + 8; // bezel top+bottom + notch + home + gap
+  const BEZEL_EXTRA_W = 12 * 2; // bezel left+right
+  const BUTTON_AREA = 52; // preview button + error banner space
+  const phoneDims = useMemo(() => {
+    const availH = phoneContainerSize.height - BUTTON_AREA;
+    if (availH <= 0) return { w: 375, h: 720 };
+    const screenH = availH - BEZEL_EXTRA_H;
+    const screenW = Math.round(screenH * PHONE_ASPECT);
+    return { w: Math.max(screenW, 200), h: Math.max(screenH, 380) };
+  }, [phoneContainerSize.height]);
 
   const CONFIG_BASE_URL = "http://localhost:3000";
 
@@ -513,6 +607,15 @@ export default function TestHarness() {
                           <option value="sfa">sfa</option>
                         </select>
                       </div>
+                      <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 6, marginTop: 2 }}>
+                        <div style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4 }}>PWA Preview</div>
+                        <div style={S.fetchRow}>
+                          <label style={S.label}>URL</label>
+                          <input style={S.input} value={pwaUrl} onChange={(e) => setPwaUrl(e.target.value)} placeholder="http://localhost:8080" />
+                          <label style={{ ...S.label, width: 40 }}>Token</label>
+                          <input style={S.input} value={pwaToken} onChange={(e) => setPwaToken(e.target.value)} placeholder="JWT (optional)" />
+                        </div>
+                      </div>
                     </>
                   )}
                 </div>
@@ -589,6 +692,7 @@ export default function TestHarness() {
                 </div>
               </div>
             )}
+
           </div>
         </div>
 
@@ -631,7 +735,7 @@ export default function TestHarness() {
           ...S.rightPanel,
           width: rightCollapsed ? 0 : undefined,
           minWidth: rightCollapsed ? 0 : undefined,
-          overflow: rightCollapsed ? "hidden" : "auto",
+          overflow: "hidden",
           flex: rightCollapsed ? "0 0 0px" : 1,
           transition: "flex 0.25s ease, width 0.25s ease",
         }}>
@@ -665,11 +769,80 @@ export default function TestHarness() {
                 console.warn(`[TestHarness] No save handler for configKey: "${configKey}"`);
               }}
               onDraftChange={setDraftForDebug}
+              pwaUrl={pwaUrl || undefined}
+              pwaToken={pwaToken || undefined}
             >
               <div style={S.rightContent}>
-                <TopToggleList />
-                <MiddleContent />
-                <BottomActionBar />
+                <div style={S.rightContentLeft}>
+                  <TopToggleList />
+                  <MiddleContent />
+                  <BottomActionBar />
+                </div>
+                {pwaUrl && (
+                  <div ref={phoneContainerRef} style={S.rightContentRight}>
+                    {/* Live Preview toggle */}
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#374151', cursor: 'pointer', userSelect: 'none' }}>
+                      <span style={{ fontWeight: 500 }}>Live Preview</span>
+                      <div
+                        onClick={() => setLivePreview((v) => !v)}
+                        style={{
+                          width: 36,
+                          height: 20,
+                          borderRadius: 10,
+                          background: livePreview ? '#0d9488' : '#d1d5db',
+                          position: 'relative',
+                          transition: 'background 0.2s',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: '50%',
+                          background: '#fff',
+                          position: 'absolute',
+                          top: 2,
+                          left: livePreview ? 18 : 2,
+                          transition: 'left 0.2s',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                        }} />
+                      </div>
+                    </label>
+                    <PhoneMockup width={phoneDims.w} height={phoneDims.h}>
+                      <AppPwaPreview
+                        ref={previewRef}
+                        pwaUrl={pwaUrl}
+                        token={pwaToken || undefined}
+                        manualMode={!livePreview}
+                        onStatusChange={setPreviewStatus}
+                        onError={(msg) => setPreviewError(msg)}
+                        style={{ width: '100%', height: '100%' }}
+                      />
+                    </PhoneMockup>
+                    {!livePreview && (
+                      <button
+                        style={S.previewBtn(previewStatus)}
+                        disabled={previewStatus === 'loading' || previewStatus === 'applying'}
+                        onClick={() => {
+                          setPreviewError(null);
+                          previewRef.current?.sendConfig();
+                        }}
+                      >
+                        {previewStatus === 'applying' && (
+                          <span style={S.spinner} />
+                        )}
+                        {previewStatus === 'applying' ? 'Applying…' : 'Preview'}
+                      </button>
+                    )}
+                    {previewError && (
+                      <div style={S.previewErrorBanner}>
+                        {previewError}
+                        <span style={{ cursor: 'pointer', marginLeft: 8, fontWeight: 600 }} onClick={() => setPreviewError(null)}>×</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </ViewRendererProvider>
           ) : (

@@ -28,16 +28,18 @@ export function ReportListCard({
     <div
       className={cn(
         "flex items-center gap-3 px-4 py-3 rounded-lg border bg-card",
-        "transition-all duration-150",
-        "hover:border-primary/30 hover:shadow-sm",
-        !enabled && "opacity-55",
+        "transition-all duration-200",
+        "hover:shadow-sm",
+        enabled
+          ? "border-l-[3px] border-l-emerald-500 border-emerald-200/60 bg-emerald-50/30"
+          : "border-muted-foreground/15 text-muted-foreground",
       )}
     >
       {/* Doc icon */}
       <FileText
         className={cn(
           "h-4 w-4 shrink-0",
-          enabled ? "text-emerald-600" : "text-muted-foreground",
+          enabled ? "text-emerald-600" : "text-muted-foreground/60",
         )}
       />
 
@@ -45,7 +47,7 @@ export function ReportListCard({
       <span
         className={cn(
           "flex-1 text-sm font-medium leading-tight truncate",
-          enabled ? "text-foreground" : "text-muted-foreground",
+          enabled ? "text-foreground" : "text-muted-foreground/80",
         )}
         title={report.name}
       >
@@ -56,7 +58,12 @@ export function ReportListCard({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+        className={cn(
+          "h-7 w-7 shrink-0",
+          enabled
+            ? "text-muted-foreground hover:text-emerald-700 hover:bg-emerald-100/50"
+            : "text-muted-foreground/50 hover:text-foreground",
+        )}
         onClick={(e) => {
           e.stopPropagation();
           onEdit();

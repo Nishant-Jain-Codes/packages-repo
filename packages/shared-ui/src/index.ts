@@ -1,3 +1,6 @@
+// ─── Theme (CSS variables for shadcn/ui) ─────────────────
+import "./theme.css";
+
 // ─── Utility ─────────────────────────────────────────────
 export { cn } from "./lib/utils";
 

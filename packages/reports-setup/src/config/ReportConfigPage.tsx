@@ -118,6 +118,7 @@ function ReportConfigInner() {
   const voiceCtx = useVoiceAgentContextOptional();
   const registerUICallbacks = voiceCtx?.registerUICallbacks ?? (() => {});
   const setStage = voiceCtx?.actions?.setStage ?? (() => {});
+  const { onClose, hideBackToList, showPreview, showSaveAll, showVoiceAssisted, showFooterSave, showRoleSwitcher, showUndo, showAutoSuggest } = useReportsConfig();
   const { initialCards, onCardsUpdate, selectedReportId } = useReportsConfig();
   const isControlled = !!(initialCards && initialCards.length > 0);
   useEffect(() => { setStage("report-config"); }, []);
@@ -481,7 +482,7 @@ function ReportConfigInner() {
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-5 py-3 bg-card border-b shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" onClick={() => onClose ? onClose() : navigate(-1)}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <BarChart2 className="h-5 w-5 text-primary" />
@@ -498,6 +499,7 @@ function ReportConfigInner() {
 
         <div className="flex items-center gap-2">
           {/* T1 – Role switcher */}
+          {showRoleSwitcher && (
           <Select value={rolePrefix} onValueChange={setRolePrefix}>
             <SelectTrigger className="h-8 text-xs w-[110px]">
               <SelectValue />
@@ -509,7 +511,9 @@ function ReportConfigInner() {
               <SelectItem value="nse">NSE</SelectItem>
             </SelectContent>
           </Select>
+          )}
 
+          {showVoiceAssisted && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -525,8 +529,10 @@ function ReportConfigInner() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          )}
 
           {/* T3 – Undo */}
+          {showUndo && (
           <Button
             variant="ghost" size="icon"
             className="h-8 w-8 text-muted-foreground"
@@ -542,7 +548,9 @@ function ReportConfigInner() {
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
+          )}
 
+          {showPreview && (
           <Button
             variant="outline" size="sm"
             onClick={() => navigate("/report-preview")}
@@ -552,7 +560,9 @@ function ReportConfigInner() {
             <Eye className="h-4 w-4 mr-1.5" />
             Preview
           </Button>
+          )}
 
+          {showSaveAll && (
           <Button onClick={handleSave} disabled={saving || !cards.length} size="sm" className="relative">
             <Save className="h-4 w-4 mr-1.5" />
             {saving ? "Saving…" : "Save All"}
@@ -560,6 +570,7 @@ function ReportConfigInner() {
               <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-400 border border-background" />
             )}
           </Button>
+          )}
         </div>
       </header>
 
@@ -614,6 +625,7 @@ function ReportConfigInner() {
               <ScrollArea className="flex-1">
                 <div className="p-6 max-w-3xl mx-auto w-full">
                   {/* T2 – AI suggest strip */}
+                  {showAutoSuggest && (
                   <div className="flex items-center justify-between mb-4 p-3 bg-muted/40 rounded-lg border border-dashed">
                     <p className="text-xs text-muted-foreground">
                       Smart suggestions based on report name &amp; key
@@ -635,6 +647,7 @@ function ReportConfigInner() {
                       Auto-suggest
                     </Button>
                   </div>
+                  )}
 
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="mb-6 w-full grid grid-cols-5 h-auto">
@@ -877,11 +890,13 @@ function ReportConfigInner() {
                 </div>
               </ScrollArea>
 
-              <footer className="flex items-center justify-between px-6 py-3 border-t bg-card/60 shrink-0">
-                <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setSelectedId(null)}>
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Back to list
-                </Button>
+              <footer className={`flex items-center ${hideBackToList ? 'justify-end' : 'justify-between'} px-6 py-3 border-t bg-card/60 shrink-0`}>
+                {!hideBackToList && (
+                  <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setSelectedId(null)}>
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Back to list
+                  </Button>
+                )}
                 <div className="flex items-center gap-2">
                   {/* T2 – Diff preview button */}
                   {hasUnsavedChanges && (
@@ -890,6 +905,7 @@ function ReportConfigInner() {
                       Review Changes
                     </Button>
                   )}
+                  {showFooterSave && (
                   <Button size="sm" onClick={handleSave} disabled={saving} className="relative">
                     <Save className="h-4 w-4 mr-1.5" />
                     {saving ? "Saving…" : "Save Config"}
@@ -897,6 +913,7 @@ function ReportConfigInner() {
                       <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-400 border border-background" />
                     )}
                   </Button>
+                  )}
                 </div>
               </footer>
             </>

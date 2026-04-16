@@ -150,9 +150,6 @@ export function ActivityPreview({ schema }: ActivityPreviewProps) {
 
   return (
     <div className="flex flex-col items-center">
-      <h3 className="text-sm font-semibold text-emerald-600 tracking-wide uppercase mb-4">
-        Live Preview
-      </h3>
 
       {/* Phone frame */}
       <div className="relative w-[300px] h-[600px] bg-black rounded-[40px] shadow-2xl p-2.5 flex flex-col">

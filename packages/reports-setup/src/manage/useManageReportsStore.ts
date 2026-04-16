@@ -118,9 +118,17 @@ export const useManageReportsStore = create<ManageReportsState>((set, get) => ({
   // ── getGroupedReports ─────────────────────────────────────────────────────
 
   getGroupedReports() {
-    const { viewMetaReports } = get();
+    const { viewMetaReports, reportList } = get();
+
+    // Catalog first, then any report_list entries not in catalog (orphans)
+    const seen = new Set<string>(viewMetaReports.map((r) => r.id));
+    const allReports = [
+      ...viewMetaReports,
+      ...reportList.filter((r) => !seen.has(r.id)),
+    ];
+
     const groups: Record<string, ViewMetaReport[]> = {};
-    for (const report of viewMetaReports) {
+    for (const report of allReports) {
       const key = report.type ?? "";
       if (!groups[key]) groups[key] = [];
       groups[key].push(report);

@@ -32,34 +32,9 @@ const styles = {
     background: '#fff',
     width: '100vw',
     height: '100vh',
-    overflow: 'auto',
+    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-  } as CSSProperties,
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px 24px',
-    borderBottom: '1px solid #e5e7eb',
-  } as CSSProperties,
-  title: {
-    fontSize: 16,
-    fontWeight: 600,
-    color: '#111827',
-  } as CSSProperties,
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    border: '1px solid #e5e7eb',
-    background: '#f9fafb',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    fontSize: 18,
-    color: '#6b7280',
   } as CSSProperties,
   body: {
     flex: 1,
@@ -117,12 +92,6 @@ export function ReportsEditModal({ reportId, onClose }: ReportsEditModalProps) {
   return (
     <div style={styles.overlay} onClick={handleClose}>
       <div style={styles.panel} onClick={(e) => e.stopPropagation()}>
-        <div style={styles.header}>
-          <span style={styles.title}>Report Settings — {reportId}</span>
-          <div style={styles.closeBtn} onClick={handleClose}>
-            ×
-          </div>
-        </div>
         <div style={styles.body}>
           <MemoryRouter initialEntries={['/report-config']}>
             <ReportsProvider
@@ -132,6 +101,15 @@ export function ReportsEditModal({ reportId, onClose }: ReportsEditModalProps) {
                 initialCards,
                 onCardsUpdate: handleCardsUpdate,
                 selectedReportId: reportId,
+                onClose: handleClose,
+                hideBackToList: true,
+                showPreview: false,
+                showSaveAll: false,
+                showVoiceAssisted: false,
+                showFooterSave: false,
+                showRoleSwitcher: false,
+                showUndo: false,
+                showAutoSuggest: false,
               }}
             >
               <Routes>

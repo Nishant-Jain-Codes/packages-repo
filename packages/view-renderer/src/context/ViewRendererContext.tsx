@@ -30,6 +30,10 @@ export interface ViewRendererContextValue {
   viewMeta: ViewMeta | null
   currentNodeMeta: NodeMeta | null
 
+  // PWA preview config (passed from host)
+  pwaUrl: string | null
+  pwaToken: string | null
+
   // Mutable drafts (working copies being edited)
   draftMap: DraftMap | null
 
@@ -75,6 +79,8 @@ export interface ViewRendererProviderProps {
   onSaveError?: (nodeType: string, configKey: AppTypeKey, error: Error) => void
   onAdvancedSettings?: (activityId: string, currentConfig: Record<string, unknown> | null) => void
   onDraftChange?: (draftMap: DraftMap | null) => void
+  pwaUrl?: string
+  pwaToken?: string
 }
 
 function cloneConfigMap(map: TenantConfigMap | null | undefined): DraftMap | null {
@@ -98,6 +104,8 @@ export function ViewRendererProvider({
   onSaveError,
   onAdvancedSettings,
   onDraftChange,
+  pwaUrl,
+  pwaToken,
 }: ViewRendererProviderProps) {
   const [tenantConfigMap, setTenantConfigMap] = useState<TenantConfigMap | null>(initialTenantConfigMap)
   const [globalConfigMap, setGlobalConfigMap] = useState<GlobalConfigMap | null>(initialGlobalConfigMap)
@@ -381,6 +389,8 @@ export function ViewRendererProvider({
     globalConfigMap,
     viewMeta,
     currentNodeMeta: activeNodeMeta ?? currentNodeMeta,
+    pwaUrl: pwaUrl ?? null,
+    pwaToken: pwaToken ?? null,
     draftMap,
     nodeTabs,
     activeNodeId,

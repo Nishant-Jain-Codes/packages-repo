@@ -11,6 +11,7 @@
       "target_config_keys": [
         "app"
       ],
+      "preview": { "type": "pwa" },
       "children": [
         {
           "feature_id": "recommendations",
@@ -53,6 +54,7 @@
       "target_config_keys": [
         "app"
       ],
+      "preview": { "type": "pwa" },
       "config": [
         {
           "field_id": "home_tasks",
@@ -142,6 +144,7 @@
       "target_config_keys": [
         "app"
       ],
+      "preview": { "type": "pwa" },
       "config": [
         {
           "field_id": "kpi_list",
@@ -999,6 +1002,7 @@
       "target_config_keys": [
         "app"
       ],
+      "preview": { "type": "pwa" },
       "children": [
         {
           "activity_id": "merchandising",
@@ -1309,6 +1313,7 @@
       "target_config_keys": [
         "app"
       ],
+      "preview": { "type": "pwa" },
       "config": [
         {
           "field_id": "primary_color",

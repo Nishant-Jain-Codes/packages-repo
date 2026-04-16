@@ -133,6 +133,66 @@ function FeatureSelectionRenderer({ features = [], onToggleFeature }: {
   )
 }
 
+function NodeContent({ nodeType, features, onToggleFeature, ctx }: {
+  nodeType: string
+  features: FeatureCardItem[]
+  onToggleFeature: (featureId: string, enabled: boolean) => void
+  ctx: ReturnType<typeof useViewRenderer>
+}) {
+  if (ctx.currentNodeMeta?.data?.reports_catalog && nodeType === 'feature_selection') {
+    return (
+      <>
+        <ReportsNodeRenderer />
+        {ctx.advancedSettingsTarget && (
+          <ReportsEditModal
+            reportId={ctx.advancedSettingsTarget}
+            onClose={ctx.closeAdvancedSettings}
+          />
+        )}
+      </>
+    )
+  }
+
+  if (nodeType === 'feature_selection') {
+    return (
+      <FeatureSelectionRenderer
+        features={features}
+        onToggleFeature={onToggleFeature}
+      />
+    )
+  }
+
+  if (nodeType === 'store_activity') {
+    if (ctx.advancedSettingsTarget) {
+      return (
+        <FormBuilderModal
+          activityId={ctx.advancedSettingsTarget}
+          onClose={ctx.closeAdvancedSettings}
+        />
+      )
+    }
+    return (
+      <StoreActivityRenderer
+        activities={ctx.activityCards}
+        onToggleActivity={ctx.handleToggleActivity}
+        onAdvancedSettings={ctx.handleAdvancedSettings}
+      />
+    )
+  }
+
+  if (nodeType === 'config_editor') {
+    const nodeMeta = ctx.currentNodeMeta as ConfigEditorNodeMeta | null
+    if (!nodeMeta) return <div style={styles.empty}>No node selected</div>
+    return <ConfigEditorRenderer node={nodeMeta} />
+  }
+
+  return (
+    <div style={styles.empty}>
+      No renderer for node type: {nodeType}
+    </div>
+  )
+}
+
 export function MiddleContent({ nodeType, features, onToggleFeature, renderNode }: MiddleContentProps) {
   const ctx = useViewRenderer()
 
@@ -152,62 +212,14 @@ export function MiddleContent({ nodeType, features, onToggleFeature, renderNode 
     return <div style={styles.empty}>Select a node</div>
   }
 
-  if (ctx.currentNodeMeta?.data?.reports_catalog && resolvedNodeType === 'feature_selection') {
-    return (
-      <div style={styles.container}>
-        <ReportsNodeRenderer />
-        {ctx.advancedSettingsTarget && (
-          <ReportsEditModal
-            reportId={ctx.advancedSettingsTarget}
-            onClose={ctx.closeAdvancedSettings}
-          />
-        )}
-      </div>
-    )
-  }
-
-  if (resolvedNodeType === 'feature_selection') {
-    return (
-      <div style={styles.container}>
-        <FeatureSelectionRenderer
-          features={resolvedFeatures}
-          onToggleFeature={resolvedOnToggle}
-        />
-      </div>
-    )
-  }
-
-  if (resolvedNodeType === 'store_activity') {
-    return (
-      <div style={styles.container}>
-        <StoreActivityRenderer
-          activities={ctx.activityCards}
-          onToggleActivity={ctx.handleToggleActivity}
-          onAdvancedSettings={ctx.handleAdvancedSettings}
-        />
-        {ctx.advancedSettingsTarget && (
-          <FormBuilderModal
-            activityId={ctx.advancedSettingsTarget}
-            onClose={ctx.closeAdvancedSettings}
-          />
-        )}
-      </div>
-    )
-  }
-
-  if (resolvedNodeType === 'config_editor') {
-    const nodeMeta = ctx.currentNodeMeta as ConfigEditorNodeMeta | null
-    if (!nodeMeta) return <div style={styles.empty}>No node selected</div>
-    return (
-      <div style={styles.container}>
-        <ConfigEditorRenderer node={nodeMeta} />
-      </div>
-    )
-  }
-
   return (
-    <div style={styles.empty}>
-      No renderer for node type: {resolvedNodeType}
+    <div style={styles.container}>
+      <NodeContent
+        nodeType={resolvedNodeType}
+        features={resolvedFeatures}
+        onToggleFeature={resolvedOnToggle}
+        ctx={ctx}
+      />
     </div>
   )
 }

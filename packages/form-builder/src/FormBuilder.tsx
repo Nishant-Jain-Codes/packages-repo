@@ -109,6 +109,9 @@ export function FormBuilder() {
   const showJsonImport = features.jsonImport !== false;
   const showJsonExport = features.jsonExport !== false;
   const showAnyJsonHeaderAction = showJsonViewer || showJsonImport || showJsonExport;
+  const showDarkModeToggle = features.darkModeToggle !== false;
+  const showSaveButton = features.saveButton !== false;
+  const showAiPromptBar = features.aiPromptBar !== false;
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -382,7 +385,7 @@ export function FormBuilder() {
           <div className="flex-1" />
 
           {/* Jira Prompt Bar - centered */}
-          {showFetchJira && (
+          {showFetchJira && showAiPromptBar && (
             <div className="w-[440px] hidden lg:block">
               <AiPromptBar
                 onFetchJira={handleFetchJira}
@@ -472,38 +475,42 @@ export function FormBuilder() {
 
           {showAnyJsonHeaderAction && <Separator orientation="vertical" className="h-6" />}
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={toggleTheme}
-            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
+          {showDarkModeToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={toggleTheme}
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          )}
 
-          <Separator orientation="vertical" className="h-6" />
+          {(showDarkModeToggle || showSaveButton) && <Separator orientation="vertical" className="h-6" />}
 
-          <Button
-            size="sm"
-            className={cn("h-8 text-xs gap-1.5 relative transition-all", saveButtonFlash && "scale-110 bg-emerald-100 dark:bg-emerald-900/40")}
-            onClick={() => {
-              if (activityId) {
-                updateActivitySchema(activityId, schema);
-              } else {
-                saveToLocalStorage();
-              }
-              savedSchemaRef.current = JSON.stringify(schema);
-              setHasUnsavedChanges(false);
-              toast.success("Form saved!");
-            }}
-          >
-            <Save className="h-3.5 w-3.5" />
-            Save
-            {hasUnsavedChanges && (
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-400 border border-background" />
-            )}
-          </Button>
+          {showSaveButton && (
+            <Button
+              size="sm"
+              className={cn("h-8 text-xs gap-1.5 relative transition-all", saveButtonFlash && "scale-110 bg-emerald-100 dark:bg-emerald-900/40")}
+              onClick={() => {
+                if (activityId) {
+                  updateActivitySchema(activityId, schema);
+                } else {
+                  saveToLocalStorage();
+                }
+                savedSchemaRef.current = JSON.stringify(schema);
+                setHasUnsavedChanges(false);
+                toast.success("Form saved!");
+              }}
+            >
+              <Save className="h-3.5 w-3.5" />
+              Save
+              {hasUnsavedChanges && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-400 border border-background" />
+              )}
+            </Button>
+          )}
 
           <Button
             size="sm"
@@ -518,7 +525,7 @@ export function FormBuilder() {
         </div>
 
         {/* Jira bar for smaller screens */}
-        {showFetchJira && (
+        {showFetchJira && showAiPromptBar && (
           <div className="lg:hidden mt-2">
             <AiPromptBar
               onFetchJira={handleFetchJira}
