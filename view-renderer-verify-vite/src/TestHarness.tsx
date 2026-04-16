@@ -205,9 +205,10 @@ const S = {
     flexDirection: "column",
     alignItems: "center",
     flexShrink: 0,
-    padding: "16px 16px 16px 0",
-    gap: 12,
-    overflow: "hidden",
+    padding: "12px 16px 12px 0",
+    gap: 8,
+    overflow: "auto",
+    minHeight: 0,
   } as CSSProperties,
   previewBtn: (status: string): CSSProperties => ({
     display: "inline-flex",
@@ -261,6 +262,23 @@ const S = {
     textAlign: "center",
   } as CSSProperties,
 } as const;
+
+// ── PWA URL builder ──
+
+/** Build PWA URL with tenant/auth query params for iframe embedding. */
+function getPwaUrl(
+  baseUrl: string,
+  params: { tenant: string; token?: string; playground?: boolean },
+): string {
+  const url = new URL(baseUrl);
+  url.searchParams.set("tenant", params.tenant);
+  if (params.token) url.searchParams.set("token", params.token);
+  if (params.playground) {
+    url.searchParams.set("playground", "true");
+    url.searchParams.set("origin", window.location.origin);
+  }
+  return url.toString();
+}
 
 // ── Multi-config helpers ──
 
@@ -364,8 +382,25 @@ export default function TestHarness() {
   const [draftForDebug, setDraftForDebug] = useState<DraftMap | null>(null);
 
   // PWA Preview settings (passed to ViewRendererProvider)
-  const [pwaUrl, setPwaUrl] = useState("http://localhost:8080");
+  const [pwaBaseUrl, setPwaBaseUrl] = useState("http://localhost:8080");
   const [pwaToken, setPwaToken] = useState("");
+
+  // Build full PWA URL with tenant query params
+  const pwaUrl = useMemo(
+    () => {
+      if (!pwaBaseUrl) return "";
+      try {
+        return getPwaUrl(pwaBaseUrl, {
+          tenant: fetchTenant,
+          token: pwaToken || undefined,
+          playground: true,
+        });
+      } catch {
+        return pwaBaseUrl; // fallback if URL is invalid
+      }
+    },
+    [pwaBaseUrl, fetchTenant, pwaToken],
+  );
   const [livePreview, setLivePreview] = useState(false);
   const previewRef = useRef<AppPwaPreviewHandle>(null);
   const [previewStatus, setPreviewStatus] = useState<PwaStatus>('loading');
@@ -380,13 +415,14 @@ export default function TestHarness() {
   const PHONE_ASPECT = 375 / 720; // width / height (screen only)
   const BEZEL_EXTRA_H = 12 * 2 + 24 + 4 + 8; // bezel top+bottom + notch + home + gap
   const BEZEL_EXTRA_W = 12 * 2; // bezel left+right
-  const BUTTON_AREA = 52; // preview button + error banner space
+  const BUTTON_AREA = 64; // preview button + toggle + error banner space
+  const SCALE = 0.85; // shrink phone to avoid overflow
   const phoneDims = useMemo(() => {
     const availH = phoneContainerSize.height - BUTTON_AREA;
-    if (availH <= 0) return { w: 375, h: 720 };
-    const screenH = availH - BEZEL_EXTRA_H;
+    if (availH <= 0) return { w: 320, h: 600 };
+    const screenH = Math.round((availH - BEZEL_EXTRA_H) * SCALE);
     const screenW = Math.round(screenH * PHONE_ASPECT);
-    return { w: Math.max(screenW, 200), h: Math.max(screenH, 380) };
+    return { w: Math.max(screenW, 180), h: Math.max(screenH, 340) };
   }, [phoneContainerSize.height]);
 
   const CONFIG_BASE_URL = "http://localhost:3000";
@@ -611,7 +647,7 @@ export default function TestHarness() {
                         <div style={{ fontSize: 10, color: "#9ca3af", marginBottom: 4 }}>PWA Preview</div>
                         <div style={S.fetchRow}>
                           <label style={S.label}>URL</label>
-                          <input style={S.input} value={pwaUrl} onChange={(e) => setPwaUrl(e.target.value)} placeholder="http://localhost:8080" />
+                          <input style={S.input} value={pwaBaseUrl} onChange={(e) => setPwaBaseUrl(e.target.value)} placeholder="http://localhost:8080" />
                           <label style={{ ...S.label, width: 40 }}>Token</label>
                           <input style={S.input} value={pwaToken} onChange={(e) => setPwaToken(e.target.value)} placeholder="JWT (optional)" />
                         </div>
@@ -781,14 +817,14 @@ export default function TestHarness() {
                 {pwaUrl && (
                   <div ref={phoneContainerRef} style={S.rightContentRight}>
                     {/* Live Preview toggle */}
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#374151', cursor: 'pointer', userSelect: 'none' }}>
-                      <span style={{ fontWeight: 500 }}>Live Preview</span>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#4b5563', cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}>
+                      <span style={{ fontWeight: 500, letterSpacing: '0.02em' }}>Live Preview</span>
                       <div
                         onClick={() => setLivePreview((v) => !v)}
                         style={{
-                          width: 36,
-                          height: 20,
-                          borderRadius: 10,
+                          width: 32,
+                          height: 18,
+                          borderRadius: 9,
                           background: livePreview ? '#0d9488' : '#d1d5db',
                           position: 'relative',
                           transition: 'background 0.2s',
@@ -797,15 +833,15 @@ export default function TestHarness() {
                         }}
                       >
                         <div style={{
-                          width: 16,
-                          height: 16,
+                          width: 14,
+                          height: 14,
                           borderRadius: '50%',
                           background: '#fff',
                           position: 'absolute',
                           top: 2,
-                          left: livePreview ? 18 : 2,
+                          left: livePreview ? 16 : 2,
                           transition: 'left 0.2s',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.18)',
                         }} />
                       </div>
                     </label>
@@ -822,7 +858,7 @@ export default function TestHarness() {
                     </PhoneMockup>
                     {!livePreview && (
                       <button
-                        style={S.previewBtn(previewStatus)}
+                        style={{ ...S.previewBtn(previewStatus), padding: '6px 24px', fontSize: 12 }}
                         disabled={previewStatus === 'loading' || previewStatus === 'applying'}
                         onClick={() => {
                           setPreviewError(null);

@@ -23,7 +23,14 @@ export interface ViewMeta {
 export interface PreviewConfig {
   type: 'pwa' | 'desktop' | 'web'
   url?: string
+  /** Simple GoRouter path for stateless screens (e.g. "/home") */
   route?: string
+  /** Playground action name for stateful screens (e.g. "preview_screen") */
+  action?: string
+  /** Target screen identifier used by the Flutter PlaygroundNavigator */
+  screen?: string
+  /** Optional params passed to the action handler (e.g. { outlet_code: "..." }) */
+  params?: Record<string, unknown>
   width?: number
   height?: number
   label?: string

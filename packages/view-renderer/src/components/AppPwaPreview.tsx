@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo, useImperativeHandle, forwardRef, type CSSProperties } from 'react'
 import { useViewRenderer } from '../context/ViewRendererContext'
-import type { AppTypeKey, TenantConfig } from '../types'
+import type { AppTypeKey, TenantConfig, PreviewConfig } from '../types'
 
 // ── Playground message protocol ──
 
@@ -15,11 +15,17 @@ interface PlaygroundNavigate {
   route: string
 }
 
+interface PlaygroundAction {
+  type: 'playground:action'
+  action: string
+  payload: Record<string, unknown>
+}
+
 interface PlaygroundPing {
   type: 'playground:ping'
 }
 
-type PlaygroundOutgoingMessage = PlaygroundConfigPatch | PlaygroundNavigate | PlaygroundPing
+type PlaygroundOutgoingMessage = PlaygroundConfigPatch | PlaygroundNavigate | PlaygroundAction | PlaygroundPing
 
 interface PlaygroundReady {
   type: 'playground:ready'
@@ -75,6 +81,11 @@ export interface AppPwaPreviewProps {
   route?: string
   /** When true, config is only sent via ref.sendConfig(), not on every draftMap change */
   manualMode?: boolean
+  /**
+   * When true (default), loads PWA in playground mode with config patching via postMessage.
+   * When false, loads PWA normally — useful for standalone preview with autologin.
+   */
+  playground?: boolean
 }
 
 export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>(function AppPwaPreview({
@@ -87,17 +98,18 @@ export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>
   onError,
   route,
   manualMode,
+  playground = true,
 }, ref) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const versionRef = useRef(0)
   const [status, setStatus] = useState<PwaStatus>('loading')
   const isReadyRef = useRef(false)
 
-  const { draftMap } = useViewRenderer()
+  const { draftMap, currentNodeMeta } = useViewRenderer()
 
-  // Compute the iframe src with playground query params
+  // Compute the iframe src — playground mode adds query params, non-playground uses autologin token only
   const [iframeKey, setIframeKey] = useState(0)
-  const iframeSrc = buildIframeSrc(pwaUrl, token)
+  const iframeSrc = playground ? buildIframeSrc(pwaUrl, token) : buildAutoLoginSrc(pwaUrl, token)
 
   // Update status and notify parent
   const updateStatus = useCallback(
@@ -108,14 +120,23 @@ export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>
     [onStatusChange],
   )
 
+  // Resolve origin — handles both absolute URLs and relative paths (e.g. "/pwa" via proxy)
+  const targetOrigin = useMemo(() => {
+    try {
+      return new URL(pwaUrl).origin
+    } catch {
+      return window.location.origin
+    }
+  }, [pwaUrl])
+
   // Send a message to the PWA iframe
   const sendMessage = useCallback(
     (message: PlaygroundOutgoingMessage) => {
       const iframe = iframeRef.current
       if (!iframe?.contentWindow) return
-      iframe.contentWindow.postMessage(JSON.stringify(message), new URL(pwaUrl).origin)
+      iframe.contentWindow.postMessage(JSON.stringify(message), targetOrigin)
     },
-    [pwaUrl],
+    [targetOrigin],
   )
 
   // Push current draftMap config into the iframe
@@ -148,10 +169,8 @@ export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>
 
   // Listen for messages from the PWA
   useEffect(() => {
-    const expectedOrigin = new URL(pwaUrl).origin
-
     function handleMessage(event: MessageEvent) {
-      if (event.origin !== expectedOrigin) return
+      if (event.origin !== targetOrigin) return
 
       let parsed: PlaygroundIncomingMessage
       try {
@@ -182,13 +201,13 @@ export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>
 
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [pwaUrl, updateStatus, onError])
+  }, [targetOrigin, updateStatus, onError])
 
-  // Auto-send config on draftMap change (only in non-manual mode)
+  // Auto-send config on draftMap change (only in playground + non-manual mode)
   useEffect(() => {
-    if (manualMode) return
+    if (!playground || manualMode) return
     sendConfig()
-  }, [draftMap, manualMode, sendConfig])
+  }, [draftMap, playground, manualMode, sendConfig])
 
   // Fallback: if PWA never sends playground:ready, mark ready when iframe loads
   const handleIframeLoad = useCallback(() => {
@@ -202,11 +221,39 @@ export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>
     }, 1500)
   }, [updateStatus])
 
-  // Navigate PWA when route prop changes
+  // Derive preview config from the active node (context-driven navigation)
+  const nodePreview: PreviewConfig | undefined = currentNodeMeta?.preview?.type === 'pwa'
+    ? currentNodeMeta.preview
+    : undefined
+
+  // Resolve effective route/action: explicit prop wins, then node preview config
+  const effectiveRoute = route ?? nodePreview?.route
+  const effectiveAction = nodePreview?.action
+  const effectiveScreen = nodePreview?.screen
+  const effectiveParams = nodePreview?.params
+
+  // Navigate or send action to PWA when the active node changes.
+  // activeNodeId is included as a dependency so the effect re-fires even when
+  // two nodes share the same preview config (e.g. multiple tabs → screen: "home").
+  const activeNodeId = currentNodeMeta?.node_id
   useEffect(() => {
-    if (!isReadyRef.current || !route) return
-    sendMessage({ type: 'playground:navigate', route })
-  }, [route, sendMessage])
+    if (!isReadyRef.current) return
+
+    // Action-based navigation (stateful screens like outlet_detail)
+    if (effectiveAction && effectiveScreen) {
+      sendMessage({
+        type: 'playground:action',
+        action: effectiveAction,
+        payload: { screen: effectiveScreen, ...(effectiveParams ?? {}) },
+      })
+      return
+    }
+
+    // Simple route navigation (stateless screens like /home)
+    if (effectiveRoute) {
+      sendMessage({ type: 'playground:navigate', route: effectiveRoute })
+    }
+  }, [activeNodeId, effectiveRoute, effectiveAction, effectiveScreen, effectiveParams, sendMessage])
 
   return (
     <div className={className} style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -241,7 +288,34 @@ export const AppPwaPreview = forwardRef<AppPwaPreviewHandle, AppPwaPreviewProps>
             color: '#666',
           }}
         >
-          <span>Loading app preview...</span>
+          <style>{`
+            @keyframes shimmer {
+              0% { background-position: -200% 0; }
+              100% { background-position: 200% 0; }
+            }
+          `}</style>
+          <div style={{ width: '80%', maxWidth: 260, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{
+              height: 40, width: '100%', borderRadius: 6,
+              background: 'linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%)',
+              backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite ease-in-out',
+            }} />
+            <div style={{
+              height: 16, width: '80%', borderRadius: 4,
+              background: 'linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%)',
+              backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite ease-in-out',
+            }} />
+            <div style={{
+              height: 16, width: '60%', borderRadius: 4,
+              background: 'linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%)',
+              backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite ease-in-out',
+            }} />
+            <div style={{
+              height: 16, width: '70%', borderRadius: 4,
+              background: 'linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%)',
+              backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite ease-in-out',
+            }} />
+          </div>
           <button
             onClick={reload}
             style={{
@@ -276,6 +350,16 @@ export function useAppPwaPreviewActions(iframeRef: React.RefObject<HTMLIFrameEle
     [iframeRef, pwaUrl],
   )
 
+  const action = useCallback(
+    (actionName: string, payload: Record<string, unknown> = {}) => {
+      const iframe = iframeRef.current
+      if (!iframe?.contentWindow) return
+      const msg: PlaygroundAction = { type: 'playground:action', action: actionName, payload }
+      iframe.contentWindow.postMessage(JSON.stringify(msg), new URL(pwaUrl).origin)
+    },
+    [iframeRef, pwaUrl],
+  )
+
   const ping = useCallback(() => {
     const iframe = iframeRef.current
     if (!iframe?.contentWindow) return
@@ -283,15 +367,23 @@ export function useAppPwaPreviewActions(iframeRef: React.RefObject<HTMLIFrameEle
     iframe.contentWindow.postMessage(JSON.stringify(msg), new URL(pwaUrl).origin)
   }, [iframeRef, pwaUrl])
 
-  return { navigate, ping }
+  return { navigate, action, ping }
 }
 
 // ── Helpers ──
 
+/** Playground mode: full config-patching via postMessage */
 function buildIframeSrc(pwaUrl: string, token?: string): string {
-  const url = new URL(pwaUrl)
+  const url = new URL(pwaUrl, window.location.origin)
   url.searchParams.set('playground', 'true')
   url.searchParams.set('origin', window.location.origin)
+  if (token) url.searchParams.set('token', token)
+  return url.toString()
+}
+
+/** Non-playground autologin: loads PWA normally, passing token for auto-authentication */
+function buildAutoLoginSrc(pwaUrl: string, token?: string): string {
+  const url = new URL(pwaUrl, window.location.origin)
   if (token) url.searchParams.set('token', token)
   return url.toString()
 }

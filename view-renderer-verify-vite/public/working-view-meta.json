@@ -11,7 +11,7 @@
       "target_config_keys": [
         "app"
       ],
-      "preview": { "type": "pwa" },
+      "preview": { "type": "pwa", "screen": "home", "action": "preview_screen" },
       "children": [
         {
           "feature_id": "recommendations",
@@ -54,7 +54,7 @@
       "target_config_keys": [
         "app"
       ],
-      "preview": { "type": "pwa" },
+      "preview": { "type": "pwa", "screen": "home", "action": "preview_screen" },
       "config": [
         {
           "field_id": "home_tasks",
@@ -144,7 +144,7 @@
       "target_config_keys": [
         "app"
       ],
-      "preview": { "type": "pwa" },
+      "preview": { "type": "pwa", "screen": "home", "action": "preview_screen" },
       "config": [
         {
           "field_id": "kpi_list",
@@ -1002,7 +1002,7 @@
       "target_config_keys": [
         "app"
       ],
-      "preview": { "type": "pwa" },
+      "preview": { "type": "pwa", "screen": "outlet_detail", "action": "preview_screen" },
       "children": [
         {
           "activity_id": "merchandising",
@@ -1313,7 +1313,7 @@
       "target_config_keys": [
         "app"
       ],
-      "preview": { "type": "pwa" },
+      "preview": { "type": "pwa", "screen": "home", "action": "preview_screen" },
       "config": [
         {
           "field_id": "primary_color",
