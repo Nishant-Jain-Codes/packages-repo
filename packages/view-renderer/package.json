@@ -1,6 +1,11 @@
 {
-  "name": "view-renderer",
+  "name": "@aditya-sharma-salescode/view-renderer",
   "version": "0.1.0",
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
