@@ -1,0 +1,1 @@
+export { globalToTenantFeature } from './globalToTenantFeature'
